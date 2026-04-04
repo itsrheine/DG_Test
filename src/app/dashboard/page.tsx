@@ -65,7 +65,7 @@ function handleDelete(projectId: string) {
     );
 
   return (
-    <main className="min-h-screen bg-slate-50">
+    <main className="min-h-screen bg-slate-50 pb-20">
       <div className="mx-auto max-w-6xl px-6 py-12">
         <div className="flex items-center justify-between">
           <div>
@@ -183,6 +183,31 @@ function handleDelete(projectId: string) {
               </div>
             ))
           )}
+        </div>
+      </div>
+      <div className="fixed bottom-0 left-0 right-0 border-t border-slate-200 bg-white">
+        <div className="mx-auto flex max-w-md justify-around py-3">
+
+          <Link href="/dashboard" className="flex flex-col items-center text-slate-900">
+            <span>🏠</span>
+            <span className="text-xs">Home</span>
+          </Link>
+
+          <Link href="/projects" className="flex flex-col items-center text-slate-500">
+            <span>📁</span>
+            <span className="text-xs">Projects</span>
+          </Link>
+
+          <Link href="/notes" className="flex flex-col items-center text-slate-500">
+            <span>📝</span>
+            <span className="text-xs">Notes</span>
+          </Link>
+
+          <Link href="/settings" className="flex flex-col items-center text-slate-500">
+            <span>⚙️</span>
+            <span className="text-xs">Settings</span>
+          </Link>
+
         </div>
       </div>
     </main>
