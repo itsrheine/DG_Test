@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import BottomNav from "@/components/BottomNav";
+import { createClient } from "@/lib/supabase/client";
 
 type Project = {
   id: string;
@@ -16,32 +17,46 @@ type Project = {
 
 export default function NewProjectPage() {
   const router = useRouter();
+  const supabase = createClient();
 
   const [projectName, setProjectName] = useState("");
   const [clientName, setClientName] = useState("");
   const [propertyAddress, setPropertyAddress] = useState("");
   const [inspectionDate, setInspectionDate] = useState("");
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    const newProject: Project = {
-      id: crypto.randomUUID(),
-      name: projectName || "Untitled Project",
-      client: clientName || "No Client",
-      address: propertyAddress || "No Address",
-      inspectionDate: inspectionDate || "",
-      createdAt: new Date().toISOString(),
-      status: "active",
-    };
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-    const existingProjects = localStorage.getItem("projects");
-    const projects: Project[] = existingProjects ? JSON.parse(existingProjects) : [];
+    if (!user) {
+      router.push("/login");
+      return;
+    }
 
-    projects.unshift(newProject);
-    localStorage.setItem("projects", JSON.stringify(projects));
+    const { data, error } = await supabase
+      .from("projects")
+      .insert([
+        {
+          user_id: user.id,
+          name: projectName || "Untitled Project",
+          client: clientName || "No Client",
+          address: propertyAddress || "No Address",
+          inspection_date: inspectionDate || "",
+          status: "active",
+        },
+      ])
+      .select()
+      .single();
 
-    router.push(`/projects/${newProject.id}`);
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    router.push(`/projects/${data.id}`);
   }
 
   return (

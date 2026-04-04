@@ -8,11 +8,12 @@ import { useRouter } from "next/navigation";
 
 type Project = {
   id: string;
+  user_id: string;
   name: string;
   client: string;
   address: string;
-  inspectionDate: string;
-  createdAt: string;
+  inspection_date: string;
+  created_at: string;
   status: "active" | "archived";
 };
 
@@ -22,60 +23,67 @@ export default function DashboardPage() {
   const supabase = createClient();
   const [view, setView] = useState<"active" | "archived">("active");
 
-  useEffect(() => {
-    async function checkUser() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+useEffect(() => {
+  async function loadProjects() {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-      if (!user) {
-        router.push("/login");
-        return;
-      }
-
-      const savedProjects = localStorage.getItem("projects");
-
-      if (savedProjects) {
-        const parsedProjects: Project[] = JSON.parse(savedProjects).map((p: any) => ({
-          ...p,
-          status: p.status || "active",
-        }));
-
-        setProjects(parsedProjects);
-      }
+    if (!user) {
+      router.push("/login");
+      return;
     }
 
-    checkUser();
-  }, [router, supabase]);
+    const { data, error } = await supabase
+      .from("projects")
+      .select("*")
+      .order("created_at", { ascending: false });
 
-function handleArchive(projectId: string) {
-  const savedProjects = localStorage.getItem("projects");
-  if (!savedProjects) return;
+    if (error) {
+      console.error(error);
+      return;
+    }
 
-  const parsedProjects: Project[] = JSON.parse(savedProjects);
+    if (data) {
+      setProjects(data as Project[]);
+    }
+  }
 
-  const updatedProjects: Project[] = parsedProjects.map((project) =>
-    project.id === projectId
-      ? { ...project, status: "archived" as const }
-      : project
+  loadProjects();
+}, [router, supabase]);
+
+async function handleArchive(projectId: string) {
+  const { error } = await supabase
+    .from("projects")
+    .update({ status: "archived" })
+    .eq("id", projectId);
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  setProjects((prev) =>
+    prev.map((project) =>
+      project.id === projectId
+        ? { ...project, status: "archived" as const }
+        : project
+    )
   );
-
-  localStorage.setItem("projects", JSON.stringify(updatedProjects));
-  setProjects(updatedProjects);
 }
 
-function handleDelete(projectId: string) {
-  const savedProjects = localStorage.getItem("projects");
-  if (!savedProjects) return;
+async function handleDelete(projectId: string) {
+  const { error } = await supabase
+    .from("projects")
+    .delete()
+    .eq("id", projectId);
 
-  const parsedProjects: Project[] = JSON.parse(savedProjects);
+  if (error) {
+    console.error(error);
+    return;
+  }
 
-  const updatedProjects: Project[] = parsedProjects.filter(
-    (project) => project.id !== projectId
-  );
-
-  localStorage.setItem("projects", JSON.stringify(updatedProjects));
-  setProjects(updatedProjects);
+  setProjects((prev) => prev.filter((project) => project.id !== projectId));
 }
 
     const visibleProjects = projects.filter(
@@ -151,7 +159,7 @@ function handleDelete(projectId: string) {
                         Address: {project.address}
                       </p>
                       <p className="mt-1 text-sm text-slate-600">
-                        Inspection Date: {project.inspectionDate || "Not set"}
+                        Inspection Date: {project.inspection_date || "Not set"}
                       </p>
                     </div>
 
@@ -173,13 +181,22 @@ function handleDelete(projectId: string) {
                 ) : (
                     <button
                     type="button"
-                    onClick={() => {
-                        const updatedProjects: Project[] = projects.map((p) =>
-                        p.id === project.id ? { ...p, status: "active" as const } : p
-                        );
+                    onClick={async () => {
+                      const { error } = await supabase
+                        .from("projects")
+                        .update({ status: "active" })
+                        .eq("id", project.id);
 
-                        localStorage.setItem("projects", JSON.stringify(updatedProjects));
-                        setProjects(updatedProjects);
+                      if (error) {
+                        console.error(error);
+                        return;
+                      }
+
+                      setProjects((prev) =>
+                        prev.map((p) =>
+                          p.id === project.id ? { ...p, status: "active" as const } : p
+                        )
+                      );
                     }}
                     className="rounded-xl border border-slate-300 px-4 py-2 text-sm text-slate-700"
                     >
