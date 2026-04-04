@@ -2,28 +2,47 @@ import Link from "next/link";
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen bg-slate-50">
-      <div className="mx-auto max-w-5x1 px-6 py-16">
-        <h1 className="text-4x1 font-bold text-slate-900">
-          Home Inspection App
-        </h1>
-        <p className="mt-4 max-w-2x1 text-lg text-slate-600">
-          Create inspection projects, organize findings by category, upload photos, and generate reports.
-        </p>
+    <main className="min-h-screen bg-slate-100 flex items-center justify-center px-4">
+      <div className="w-full max-w-md rounded-3xl bg-white p-8 shadow-sm border border-slate-200">
+        <div className="flex flex-col items-center text-center">
+          <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-3xl bg-slate-900 text-3xl text-white">
+            🏠
+          </div>
 
-        <div className="mt-8 flex gap-4">
+          <h1 className="text-3xl font-bold text-slate-900">
+            Home Inspection App
+          </h1>
+
+          <p className="mt-3 text-sm text-slate-600">
+            Create projects, document findings, upload photos, and generate reports.
+          </p>
+        </div>
+
+        <div className="mt-8 space-y-3">
           <Link
-            href="/dashboard"
-            className="rounded-x1 bg-slate-900 px-5 py-3 text-white">
-              Open Dashboard
+            href="/login"
+            className="block w-full rounded-2xl bg-slate-900 px-4 py-3 text-center text-white"
+          >
+            Log In
           </Link>
+
           <Link
-            href="/projects/new"
-            className="rounded-x1 border border-slate-300 bg-white px-5 py-3 text-slate-900">
-              New Project
-            </Link>
+            href="/signup"
+            className="block w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-center text-slate-900"
+          >
+            Sign Up
+          </Link>
+        </div>
+
+        <div className="mt-6 text-center">
+          <Link
+            href="/forgot-password"
+            className="text-sm text-slate-500 underline underline-offset-4"
+          >
+            Forgot Password?
+          </Link>
         </div>
       </div>
     </main>
-  )
+  );
 }
