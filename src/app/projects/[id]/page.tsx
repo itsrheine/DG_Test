@@ -15,6 +15,14 @@ type Project = {
   createdAt: string;
 };
 
+type SavedSectionData = {
+  materials: string[];
+  condition: string;
+  issueFlags: Record<IssueType, boolean>;
+  notes: string;
+  photos: any[];
+};
+
 export default function ProjectDetailPage() {
   const router = useRouter();
 
@@ -194,7 +202,35 @@ function handleSave() {
 
     return comments;
   }, [materials, condition, issueFlags, notes, photos]);
+const fullReportSections = sections
+  .map((section) => {
+    const key = projectId
+      ? `project-${projectId}-${section}`
+      : `project-temp-${section}`;
 
+    const saved = localStorage.getItem(key);
+    if (!saved) return null;
+
+    const data: SavedSectionData = JSON.parse(saved);
+
+    const comments = buildComments(section, data);
+
+    const hasContent =
+      data.materials.length > 0 ||
+      data.condition ||
+      Object.values(data.issueFlags).some(Boolean) ||
+      data.notes.trim() ||
+      data.photos.length > 0;
+
+    if (!hasContent) return null;
+
+    return {
+      section,
+      comments,
+      photos: data.photos,
+    };
+  })
+  .filter(Boolean);
 function materialButtonClass(selected: boolean) {
   return `rounded-2xl border px-4 py-3 text-sm font-medium transition ${
     selected
@@ -244,6 +280,67 @@ function handlePhotoUpload(event: React.ChangeEvent<HTMLInputElement>) {
 function removePhoto(indexToRemove: number) {
   setPhotos((prev) => prev.filter((_, index) => index !== indexToRemove));
 }  
+
+function buildComments(section: string, data: SavedSectionData) {
+  const comments: string[] = [];
+
+  if (data.materials.length > 0) {
+    comments.push(
+      `The ${section.toLowerCase()} are primarily constructed of ${data.materials.join(", ")}.`
+    );
+  }
+
+  if (data.condition === "Good") {
+    comments.push(
+      "The visible surfaces appeared serviceable at the time of inspection."
+    );
+  }
+
+  if (data.condition === "Marginal") {
+    comments.push(
+      "The visible surfaces showed signs of wear and may need maintenance or repair."
+    );
+  }
+
+  if (data.condition === "Poor") {
+    comments.push(
+      "The visible surfaces showed significant deterioration and repair is recommended."
+    );
+  }
+
+  if (data.issueFlags.safety) {
+    comments.push("A safety concern was noted in this section.");
+  }
+
+  if (data.issueFlags.repair) {
+    comments.push(
+      "Repairs are recommended where defects or deterioration are present."
+    );
+  }
+
+  if (data.issueFlags.improve) {
+    comments.push(
+      "Improvements may help extend service life and overall usability."
+    );
+  }
+
+  if (data.issueFlags.monitor) {
+    comments.push(
+      "This area should be monitored for future movement, wear, or deterioration."
+    );
+  }
+
+  if (data.photos.length > 0) {
+    comments.push(`${data.photos.length} photo(s) attached for this section.`);
+  }
+
+  if (data.notes.trim()) {
+    comments.push(data.notes.trim());
+  }
+
+  return comments;
+}
+
   return (
     <main className="min-h-screen bg-slate-50">
           <div className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur">
@@ -478,6 +575,62 @@ function removePhoto(indexToRemove: number) {
             <h2 className="text-2xl font-semibold text-slate-900">
               Live Report Preview
             </h2>
+            <div className="mt-8 rounded-2xl border border-slate-200 bg-slate-50 p-5">
+  <h3 className="text-xl font-bold text-slate-900">Full Report Preview</h3>
+  <p className="mt-1 text-sm text-slate-600">
+    Combined saved sections for this project.
+  </p>
+
+  {fullReportSections.length > 0 ? (
+    <div className="mt-4 space-y-6">
+      {fullReportSections.map((sectionData: any, index: number) => (
+        <div
+          key={index}
+          className="rounded-2xl border border-slate-200 bg-white p-4"
+        >
+          <h4 className="text-lg font-semibold text-slate-900">
+            {sectionData.section}
+          </h4>
+
+          <ul className="mt-3 space-y-2 text-slate-800">
+            {sectionData.comments.map((comment: string, commentIndex: number) => (
+              <li
+                key={commentIndex}
+                className="rounded-xl bg-slate-50 p-3"
+              >
+                {comment}
+              </li>
+            ))}
+          </ul>
+
+          {sectionData.photos.length > 0 ? (
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              {sectionData.photos.map((photo: any, photoIndex: number) => (
+                <div
+                  key={photoIndex}
+                  className="rounded-xl border border-slate-200 bg-slate-50 p-2"
+                >
+                  <img
+                    src={photo.url}
+                    alt={`Report photo ${photoIndex + 1}`}
+                    className="h-28 w-full rounded-lg object-cover"
+                  />
+                  <p className="mt-2 text-xs text-slate-500">
+                    {photo.caption || `Photo ${photoIndex + 1}`}
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      ))}
+    </div>
+  ) : (
+    <p className="mt-4 text-slate-500">
+      No saved sections yet. Save at least one section to build the full report.
+    </p>
+  )}
+</div>
             <p className="mt-1 text-slate-600">
               This is the beginning of the auto-generated report section.
             </p>
