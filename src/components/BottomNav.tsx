@@ -14,7 +14,7 @@ export default function BottomNav() {
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 border-t border-slate-200 bg-white">
+    <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-slate-200 bg-white">
       <div className="mx-auto flex max-w-md justify-around py-3">
         {items.map((item) => {
           const isActive = pathname === item.href;

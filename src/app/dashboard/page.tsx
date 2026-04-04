@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import BottomNav from "@/components/BottomNav";
+import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
 
 type Project = {
   id: string;
@@ -16,20 +18,35 @@ type Project = {
 
 export default function DashboardPage() {
   const [projects, setProjects] = useState<Project[]>([]);
+  const router = useRouter();
+  const supabase = createClient();
   const [view, setView] = useState<"active" | "archived">("active");
 
   useEffect(() => {
-    const savedProjects = localStorage.getItem("projects");
+    async function checkUser() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-    if (savedProjects) {
-      const parsedProjects: Project[] = JSON.parse(savedProjects).map((p: any) => ({
-        ...p,
-        status: p.status || "active",
-      }));
+      if (!user) {
+        router.push("/login");
+        return;
+      }
 
-      setProjects(parsedProjects);
+      const savedProjects = localStorage.getItem("projects");
+
+      if (savedProjects) {
+        const parsedProjects: Project[] = JSON.parse(savedProjects).map((p: any) => ({
+          ...p,
+          status: p.status || "active",
+        }));
+
+        setProjects(parsedProjects);
+      }
     }
-  }, []);
+
+    checkUser();
+  }, [router, supabase]);
 
 function handleArchive(projectId: string) {
   const savedProjects = localStorage.getItem("projects");
@@ -75,9 +92,6 @@ function handleDelete(projectId: string) {
               Manage your home inspection projects.
             </p>
           </div>
-
-          <div className="mt-6 inline-flex ..."></div>
-          <div className="mt-6 inline-flex ..."></div>
 
           <Link
             href="/projects/new"
