@@ -36,6 +36,9 @@ export default function ProjectDetailPage() {
   const [notes, setNotes] = useState("");
   const [photoCount, setPhotoCount] = useState(0);
 
+  const [loaded, setLoaded] = useState(false);
+  const [saveMessage, setSaveMessage] = useState("");
+
   const materialOptions = ["Concrete", "Brick", "Pavers", "Stone", "Asphalt"];
   const conditionOptions = ["Good", "Marginal", "Poor"];
 
@@ -49,53 +52,60 @@ export default function ProjectDetailPage() {
     setProject(matchingProject);
   }, [projectId]);
 
-  useEffect(() => {
-    if (!projectId) return;
+useEffect(() => {
+  if (!projectId) return;
 
-    const saved = localStorage.getItem(storageKey);
+  const saved = localStorage.getItem(storageKey);
 
-    if (saved) {
-      const data = JSON.parse(saved);
+  if (saved) {
+    const data = JSON.parse(saved);
 
-      setMaterials(data.materials || []);
-      setCondition(data.condition || "");
-      setIssueFlags(
-        data.issueFlags || {
-          repair: false,
-          improve: false,
-          monitor: false,
-          safety: false,
-        }
-      );
-      setNotes(data.notes || "");
-      setPhotoCount(data.photoCount || 0);
-    } else {
-      setMaterials([]);
-      setCondition("");
-      setIssueFlags({
+    setMaterials(data.materials || []);
+    setCondition(data.condition || "");
+    setIssueFlags(
+      data.issueFlags || {
         repair: false,
         improve: false,
         monitor: false,
         safety: false,
-      });
-      setNotes("");
-      setPhotoCount(0);
-    }
-  }, [projectId, storageKey]);
+      }
+    );
+    setNotes(data.notes || "");
+    setPhotoCount(data.photoCount || 0);
+  } else {
+    setMaterials([]);
+    setCondition("");
+    setIssueFlags({
+      repair: false,
+      improve: false,
+      monitor: false,
+      safety: false,
+    });
+    setNotes("");
+    setPhotoCount(0);
+  }
 
-  useEffect(() => {
-    if (!projectId) return;
+  setLoaded(true);
+}, [projectId, storageKey]);
 
-    const data = {
-      materials,
-      condition,
-      issueFlags,
-      notes,
-      photoCount,
-    };
+function handleSave() {
+  if (!projectId) return;
 
-    localStorage.setItem(storageKey, JSON.stringify(data));
-  }, [projectId, storageKey, materials, condition, issueFlags, notes, photoCount]);
+  const data = {
+    materials,
+    condition,
+    issueFlags,
+    notes,
+    photoCount,
+  };
+
+  localStorage.setItem(storageKey, JSON.stringify(data));
+  setSaveMessage("Section saved");
+
+  setTimeout(() => {
+    setSaveMessage("");
+  }, 2000);
+}
 
   function toggleMaterial(value: string) {
     setMaterials((prev) =>
@@ -311,6 +321,20 @@ export default function ProjectDetailPage() {
                 </span>
               </div>
             </div>
+            <div className="mt-6 flex items-center gap-3">
+            <button
+                type="button"
+                onClick={handleSave}
+                className="rounded-xl bg-slate-900 px-5 py-3 text-white"
+            >
+                Save Section
+            </button>
+
+            {saveMessage ? (
+                <span className="text-sm text-green-600">{saveMessage}</span>
+            ) : null}
+            </div>
+
           </section>
 
           <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
