@@ -1,18 +1,28 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useParams } from "next/navigation";
 
 type IssueType = "repair" | "improve" | "monitor" | "safety";
 
-export default function ProjectDetailPage({
-  params,
-}: {
-  params: { id: string };
-}) {
-  const projectId = params.id;
-  const storageKey = `project-${projectId}-service-walks`;
+type Project = {
+  id: string;
+  name: string;
+  client: string;
+  address: string;
+  inspectionDate: string;
+  createdAt: string;
+};
 
-  const [projectName] = useState(`Inspection Project #${projectId}`);
+export default function ProjectDetailPage() {
+  const params = useParams();
+  const projectId = params?.id as string;
+
+  const storageKey = projectId
+    ? `project-${projectId}-service-walks`
+    : "project-temp-service-walks";
+
+  const [project, setProject] = useState<Project | null>(null);
   const [sectionName] = useState("Service Walks");
 
   const [materials, setMaterials] = useState<string[]>([]);
@@ -26,40 +36,66 @@ export default function ProjectDetailPage({
   const [notes, setNotes] = useState("");
   const [photoCount, setPhotoCount] = useState(0);
 
+  const materialOptions = ["Concrete", "Brick", "Pavers", "Stone", "Asphalt"];
+  const conditionOptions = ["Good", "Marginal", "Poor"];
+
   useEffect(() => {
+    const savedProjects = localStorage.getItem("projects");
+    if (!savedProjects || !projectId) return;
+
+    const projects: Project[] = JSON.parse(savedProjects);
+    const matchingProject = projects.find((p) => p.id === projectId) || null;
+
+    setProject(matchingProject);
+  }, [projectId]);
+
+  useEffect(() => {
+    if (!projectId) return;
+
     const saved = localStorage.getItem(storageKey);
 
     if (saved) {
-        const data = JSON.parse(saved);
+      const data = JSON.parse(saved);
 
-        setMaterials(data.materials || []);
-        setCondition(data.condition || "");
-        setIssueFlags(data.issueFlags || {
-            repair: false,
-            improve: false,
-            monitor: false,
-            safety: false,
-        });
-        setNotes(data.notes || "");
-        setPhotoCount(data.photoCount || 0);
+      setMaterials(data.materials || []);
+      setCondition(data.condition || "");
+      setIssueFlags(
+        data.issueFlags || {
+          repair: false,
+          improve: false,
+          monitor: false,
+          safety: false,
+        }
+      );
+      setNotes(data.notes || "");
+      setPhotoCount(data.photoCount || 0);
+    } else {
+      setMaterials([]);
+      setCondition("");
+      setIssueFlags({
+        repair: false,
+        improve: false,
+        monitor: false,
+        safety: false,
+      });
+      setNotes("");
+      setPhotoCount(0);
     }
-  }, [storageKey]);
+  }, [projectId, storageKey]);
 
   useEffect(() => {
+    if (!projectId) return;
+
     const data = {
-        materials,
-        condition,
-        issueFlags,
-        notes,
-        photoCount,
+      materials,
+      condition,
+      issueFlags,
+      notes,
+      photoCount,
     };
 
-    localStorage.setItem(storageKey,
-        JSON.stringify(data));
-  }, [storageKey, materials, condition, issueFlags, notes, photoCount]);
-
-  const materialOptions = ["Concrete", "Brick", "Pavers", "Stone", "Asphalt"];
-  const conditionOptions = ["Good", "Marginal", "Poor"];
+    localStorage.setItem(storageKey, JSON.stringify(data));
+  }, [projectId, storageKey, materials, condition, issueFlags, notes, photoCount]);
 
   function toggleMaterial(value: string) {
     setMaterials((prev) =>
@@ -80,19 +116,27 @@ export default function ProjectDetailPage({
     const comments: string[] = [];
 
     if (materials.length > 0) {
-      comments.push(`The service walks are primarily constructed of ${materials.join(", ")}.`);
+      comments.push(
+        `The service walks are primarily constructed of ${materials.join(", ")}.`
+      );
     }
 
     if (condition === "Good") {
-      comments.push("The visible walking surfaces appeared serviceable at the time of inspection.");
+      comments.push(
+        "The visible walking surfaces appeared serviceable at the time of inspection."
+      );
     }
 
     if (condition === "Marginal") {
-      comments.push("The visible walking surfaces showed signs of wear and may need maintenance or repair.");
+      comments.push(
+        "The visible walking surfaces showed signs of wear and may need maintenance or repair."
+      );
     }
 
     if (condition === "Poor") {
-      comments.push("The visible walking surfaces showed significant deterioration and repair is recommended.");
+      comments.push(
+        "The visible walking surfaces showed significant deterioration and repair is recommended."
+      );
     }
 
     if (issueFlags.safety) {
@@ -100,15 +144,21 @@ export default function ProjectDetailPage({
     }
 
     if (issueFlags.repair) {
-      comments.push("Repairs are recommended where defects or deterioration are present.");
+      comments.push(
+        "Repairs are recommended where defects or deterioration are present."
+      );
     }
 
     if (issueFlags.improve) {
-      comments.push("Improvements may help extend service life and overall usability.");
+      comments.push(
+        "Improvements may help extend service life and overall usability."
+      );
     }
 
     if (issueFlags.monitor) {
-      comments.push("This area should be monitored for future movement, wear, or deterioration.");
+      comments.push(
+        "This area should be monitored for future movement, wear, or deterioration."
+      );
     }
 
     if (photoCount > 0) {
@@ -127,10 +177,17 @@ export default function ProjectDetailPage({
       <div className="mx-auto max-w-7xl px-6 py-10">
         <div className="mb-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <p className="text-sm text-slate-500">Project</p>
-          <h1 className="mt-1 text-3xl font-bold text-slate-900">{projectName}</h1>
-          <p className="mt-2 text-slate-600">
-            This is the beginning of your real inspection form and report generator.
-          </p>
+          <h1 className="mt-1 text-3xl font-bold text-slate-900">
+            {project?.name || `Inspection Project #${projectId || "..."}`}
+          </h1>
+
+          <div className="mt-3 space-y-1 text-slate-600">
+            <p>Client: {project?.client || "No client yet"}</p>
+            <p>Address: {project?.address || "No address yet"}</p>
+            <p>
+              Inspection Date: {project?.inspectionDate || "No inspection date yet"}
+            </p>
+          </div>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
@@ -257,7 +314,9 @@ export default function ProjectDetailPage({
           </section>
 
           <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-2xl font-semibold text-slate-900">Live Report Preview</h2>
+            <h2 className="text-2xl font-semibold text-slate-900">
+              Live Report Preview
+            </h2>
             <p className="mt-1 text-slate-600">
               This is the beginning of the auto-generated report section.
             </p>
