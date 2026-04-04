@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 
@@ -15,6 +16,8 @@ type Project = {
 };
 
 export default function ProjectDetailPage() {
+  const router = useRouter();
+
   const params = useParams();
   const projectId = params?.id as string;
 
@@ -182,9 +185,43 @@ function handleSave() {
     return comments;
   }, [materials, condition, issueFlags, notes, photoCount]);
 
+function materialButtonClass(selected: boolean) {
+  return `rounded-2xl border px-4 py-3 text-sm font-medium transition ${
+    selected
+      ? "border-slate-900 bg-slate-900 text-white"
+      : "border-slate-300 bg-white text-slate-800"
+  }`;
+}
+
+function conditionButtonClass(selected: boolean) {
+  return `rounded-2xl border px-4 py-3 text-sm font-medium transition ${
+    selected
+      ? "border-blue-600 bg-blue-600 text-white"
+      : "border-slate-300 bg-white text-slate-800"
+  }`;
+}
+
+function issueButtonClass(selected: boolean) {
+  return `rounded-2xl border px-4 py-3 text-sm font-medium transition ${
+    selected
+      ? "border-amber-500 bg-amber-500 text-white"
+      : "border-slate-300 bg-white text-slate-800"
+  }`;
+}
+  
   return (
     <main className="min-h-screen bg-slate-50">
       <div className="mx-auto max-w-7xl px-6 py-10">
+        <div className="mb-4 flex items-center justify-between">
+            <button
+                onClick={() => router.push("/dashboard")}
+                className="flex items-center gap-2 text-sm text-slate-700"
+            >
+                ← Back
+            </button>
+
+            <span className="text-sm text-slate-500">Project</span>
+            </div>
         <div className="mb-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <p className="text-sm text-slate-500">Project</p>
           <h1 className="mt-1 text-3xl font-bold text-slate-900">
@@ -200,8 +237,8 @@ function handleSave() {
           </div>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-2">
-          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="flex flex-col gap-6 lg:grid lg:grid-cols-2">
+          <section className="rounded-2xl border bg-white p-6 shadow-sm w-full">
             <h2 className="text-2xl font-semibold text-slate-900">Grounds</h2>
             <p className="mt-1 text-slate-600">{sectionName}</p>
 
@@ -209,86 +246,83 @@ function handleSave() {
               <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
                 Material
               </h3>
-              <div className="mt-3 flex flex-wrap gap-3">
-                {materialOptions.map((option) => (
-                  <label
-                    key={option}
-                    className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={materials.includes(option)}
-                      onChange={() => toggleMaterial(option)}
-                    />
-                    {option}
-                  </label>
-                ))}
-              </div>
+            <div className="mt-3 flex flex-wrap gap-3">
+                {materialOptions.map((option) => {
+                    const selected = materials.includes(option);
+
+                    return (
+                    <button
+                        key={option}
+                        type="button"
+                        onClick={() => toggleMaterial(option)}
+                        className={materialButtonClass(selected)}
+                    >
+                        {option}
+                    </button>
+                    );
+                })}
+                </div>
             </div>
 
             <div className="mt-6">
               <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
                 Condition
               </h3>
-              <div className="mt-3 flex flex-wrap gap-3">
-                {conditionOptions.map((option) => (
-                  <label
-                    key={option}
-                    className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm"
-                  >
-                    <input
-                      type="radio"
-                      name="condition"
-                      checked={condition === option}
-                      onChange={() => setCondition(option)}
-                    />
-                    {option}
-                  </label>
-                ))}
-              </div>
+                <div className="mt-3 flex flex-wrap gap-3">
+                {conditionOptions.map((option) => {
+                    const selected = condition === option;
+
+                    return (
+                    <button
+                        key={option}
+                        type="button"
+                        onClick={() => setCondition(option)}
+                        className={conditionButtonClass(selected)}
+                    >
+                        {option}
+                    </button>
+                    );
+                })}
+                </div>
             </div>
 
             <div className="mt-6">
               <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
                 Issue Type
               </h3>
-              <div className="mt-3 flex flex-wrap gap-3">
-                <label className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={issueFlags.repair}
-                    onChange={() => toggleIssueFlag("repair")}
-                  />
-                  Repair
-                </label>
+            <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <button
+                type="button"
+                onClick={() => toggleIssueFlag("repair")}
+                className={issueButtonClass(issueFlags.repair)}
+            >
+                🔧 Repair
+            </button>
 
-                <label className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={issueFlags.improve}
-                    onChange={() => toggleIssueFlag("improve")}
-                  />
-                  Improve
-                </label>
+            <button
+                type="button"
+                onClick={() => toggleIssueFlag("improve")}
+                className={issueButtonClass(issueFlags.improve)}
+            >
+                📈 Improve
+            </button>
 
-                <label className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={issueFlags.monitor}
-                    onChange={() => toggleIssueFlag("monitor")}
-                  />
-                  Monitor
-                </label>
+            <button
+                type="button"
+                onClick={() => toggleIssueFlag("monitor")}
+                className={issueButtonClass(issueFlags.monitor)}
+            >
+                👁 Monitor
+            </button>
 
-                <label className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={issueFlags.safety}
-                    onChange={() => toggleIssueFlag("safety")}
-                  />
-                  Safety Issue
-                </label>
-              </div>
+            <button
+                type="button"
+                onClick={() => toggleIssueFlag("safety")}
+                className={issueButtonClass(issueFlags.safety)}
+            >
+                ⚠️ Safety
+            </button>
+            </div>
             </div>
 
             <div className="mt-6">
@@ -299,7 +333,7 @@ function handleSave() {
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={5}
-                className="w-full rounded-2xl border border-slate-300 p-4"
+                className="w-full rounded-2xl border border-slate-300 p-4 text-base"
                 placeholder="Add section-specific notes here..."
               />
             </div>
