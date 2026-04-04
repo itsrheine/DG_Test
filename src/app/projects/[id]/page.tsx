@@ -37,7 +37,7 @@ export default function ProjectDetailPage() {
     safety: false,
   });
   const [notes, setNotes] = useState("");
-  const [photos, setPhotos] = useState<string[]>([]);
+  const [photos, setPhotos] = useState<any[]>([]);
 
   const [loaded, setLoaded] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
@@ -222,7 +222,10 @@ function handlePhotoUpload(event: React.ChangeEvent<HTMLInputElement>) {
     reader.onloadend = () => {
       const result = reader.result;
       if (typeof result === "string") {
-        setPhotos((prev) => [...prev, result]);
+        setPhotos((prev) => [
+  ...prev,
+  { url: result, caption: "" }
+]);
       }
     };
 
@@ -404,10 +407,21 @@ function removePhoto(indexToRemove: number) {
           className="rounded-2xl border border-slate-200 bg-slate-50 p-2"
         >
           <img
-            src={photo}
+            src={photo.url}
             alt={`Uploaded photo ${index + 1}`}
             className="h-32 w-full rounded-xl object-cover"
           />
+          <input
+  type="text"
+  value={photo.caption}
+  onChange={(e) => {
+    const newPhotos = [...photos];
+    newPhotos[index].caption = e.target.value;
+    setPhotos(newPhotos);
+  }}
+  placeholder="Add caption..."
+  className="mt-2 w-full rounded-xl border px-3 py-2 text-sm"
+/>
           <button
             type="button"
             onClick={() => removePhoto(index)}
@@ -489,12 +503,12 @@ function removePhoto(indexToRemove: number) {
           className="rounded-xl border border-slate-200 bg-white p-2"
         >
           <img
-            src={photo}
+            src={photo.url}
             alt={`Report photo ${index + 1}`}
             className="h-32 w-full rounded-lg object-cover"
           />
           <p className="mt-2 text-xs text-slate-500">
-            Photo {index + 1}
+            {photo.caption || `Photo ${index + 1}`}
           </p>
         </div>
       ))}
