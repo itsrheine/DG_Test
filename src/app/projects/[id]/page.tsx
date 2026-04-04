@@ -37,10 +37,12 @@ export default function ProjectDetailPage() {
     safety: false,
   });
   const [notes, setNotes] = useState("");
-  const [photoCount, setPhotoCount] = useState(0);
+  const [photos, setPhotos] = useState<string[]>([]);
 
   const [loaded, setLoaded] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
+
+  const [isSaving, setIsSaving] = useState(false);
 
   const materialOptions = ["Concrete", "Brick", "Pavers", "Stone", "Asphalt"];
   const conditionOptions = ["Good", "Marginal", "Poor"];
@@ -74,7 +76,7 @@ useEffect(() => {
       }
     );
     setNotes(data.notes || "");
-    setPhotoCount(data.photoCount || 0);
+    setPhotos(data.photos || []);
   } else {
     setMaterials([]);
     setCondition("");
@@ -85,7 +87,7 @@ useEffect(() => {
       safety: false,
     });
     setNotes("");
-    setPhotoCount(0);
+    setPhotos([]);
   }
 
   setLoaded(true);
@@ -99,15 +101,17 @@ function handleSave() {
     condition,
     issueFlags,
     notes,
-    photoCount,
+    photos,
   };
 
   localStorage.setItem(storageKey, JSON.stringify(data));
-  setSaveMessage("Section saved");
+
+  setSaveMessage("Saved");
 
   setTimeout(() => {
+    setIsSaving(false);
     setSaveMessage("");
-  }, 2000);
+  }, 1500);
 }
 
   function toggleMaterial(value: string) {
@@ -174,8 +178,8 @@ function handleSave() {
       );
     }
 
-    if (photoCount > 0) {
-      comments.push(`${photoCount} photo(s) attached for this section.`);
+    if (photos.length > 0) {
+      comments.push(`${photos.length} photo(s) attached for this section.`);
     }
 
     if (notes.trim()) {
@@ -183,7 +187,7 @@ function handleSave() {
     }
 
     return comments;
-  }, [materials, condition, issueFlags, notes, photoCount]);
+  }, [materials, condition, issueFlags, notes, photos]);
 
 function materialButtonClass(selected: boolean) {
   return `rounded-2xl border px-4 py-3 text-sm font-medium transition ${
@@ -208,20 +212,58 @@ function issueButtonClass(selected: boolean) {
       : "border-slate-300 bg-white text-slate-800"
   }`;
 }
-  
+function handlePhotoUpload(event: React.ChangeEvent<HTMLInputElement>) {
+  const files = event.target.files;
+  if (!files || files.length === 0) return;
+
+  Array.from(files).forEach((file) => {
+    const reader = new FileReader();
+
+    reader.onloadend = () => {
+      const result = reader.result;
+      if (typeof result === "string") {
+        setPhotos((prev) => [...prev, result]);
+      }
+    };
+
+    reader.readAsDataURL(file);
+  });
+
+  event.target.value = "";
+}
+
+function removePhoto(indexToRemove: number) {
+  setPhotos((prev) => prev.filter((_, index) => index !== indexToRemove));
+}  
   return (
     <main className="min-h-screen bg-slate-50">
-      <div className="mx-auto max-w-7xl px-6 py-10">
-        <div className="mb-4 flex items-center justify-between">
-            <button
-                onClick={() => router.push("/dashboard")}
-                className="flex items-center gap-2 text-sm text-slate-700"
-            >
-                ← Back
-            </button>
+          <div className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur">
+    <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
 
-            <span className="text-sm text-slate-500">Project</span>
-            </div>
+      <button
+        onClick={() => router.push("/dashboard")}
+        className="rounded-full px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
+      >
+        ← Back
+      </button>
+
+      <div className="text-center">
+        <p className="text-sm font-semibold text-slate-900">
+          {project?.name || "Inspection Project"}
+        </p>
+        <p className="text-xs text-slate-500">Project Details</p>
+      </div>
+
+<button
+  onClick={handleSave}
+  className="rounded-full bg-slate-900 px-4 py-2 text-sm text-white"
+>
+  {isSaving ? "Saving..." : saveMessage ? "Saved ✓" : "Save"}
+</button>
+
+    </div>
+  </div>
+      <div className="mx-auto max-w-7xl px-6 py-10">
         <div className="mb-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <p className="text-sm text-slate-500">Project</p>
           <h1 className="mt-1 text-3xl font-bold text-slate-900">
@@ -338,23 +380,50 @@ function issueButtonClass(selected: boolean) {
               />
             </div>
 
-            <div className="mt-6">
-              <label className="mb-2 block text-sm font-semibold uppercase tracking-wide text-slate-500">
-                Photos
-              </label>
-              <div className="flex items-center gap-3">
-                <input
-                  type="number"
-                  min={0}
-                  value={photoCount}
-                  onChange={(e) => setPhotoCount(Number(e.target.value) || 0)}
-                  className="w-28 rounded-xl border border-slate-300 px-3 py-2"
-                />
-                <span className="text-sm text-slate-600">
-                  temporary placeholder for uploaded photo count
-                </span>
-              </div>
-            </div>
+<div className="mt-6">
+  <label className="mb-2 block text-sm font-semibold uppercase tracking-wide text-slate-500">
+    Photos
+  </label>
+
+  <label className="inline-flex cursor-pointer items-center rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-medium text-slate-800">
+    📸 Upload Photos
+    <input
+      type="file"
+      accept="image/*"
+      multiple
+      onChange={handlePhotoUpload}
+      className="hidden"
+    />
+  </label>
+
+  {photos.length > 0 ? (
+    <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+      {photos.map((photo, index) => (
+        <div
+          key={index}
+          className="rounded-2xl border border-slate-200 bg-slate-50 p-2"
+        >
+          <img
+            src={photo}
+            alt={`Uploaded photo ${index + 1}`}
+            className="h-32 w-full rounded-xl object-cover"
+          />
+          <button
+            type="button"
+            onClick={() => removePhoto(index)}
+            className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-700"
+          >
+            Remove
+          </button>
+        </div>
+      ))}
+    </div>
+  ) : (
+    <p className="mt-3 text-sm text-slate-500">
+      No photos uploaded yet.
+    </p>
+  )}
+</div>
             <div className="mt-6 flex items-center gap-3">
             <button
                 type="button"

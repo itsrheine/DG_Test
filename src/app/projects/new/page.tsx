@@ -36,7 +36,6 @@ export default function NewProjectPage() {
     const projects: Project[] = existingProjects ? JSON.parse(existingProjects) : [];
 
     projects.unshift(newProject);
-
     localStorage.setItem("projects", JSON.stringify(projects));
 
     router.push(`/projects/${newProject.id}`);
@@ -44,27 +43,33 @@ export default function NewProjectPage() {
 
   return (
     <main className="min-h-screen bg-slate-50">
-      <div className="mx-auto max-w-3xl px-4 py-8">
+      <div className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur">
+        <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4">
+          <button
+            onClick={() => router.push("/dashboard")}
+            className="rounded-full px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+          >
+            ← Back
+          </button>
 
-      <div className="mb-6 flex items-center justify-between">
-        <button
-          onClick={() => router.push("/dashboard")}
-          className="text-sm text-slate-600"
-        >
-          ← Back
-        </button>
+          <div className="text-center">
+            <p className="text-sm font-semibold text-slate-900">New Project</p>
+            <p className="text-xs text-slate-500">Create inspection</p>
+          </div>
 
-        <span className="text-sm text-slate-400">New Project</span>
+          <div className="w-[72px]" />
+        </div>
       </div>
 
-      <h1 className="text-2xl font-semibold">New Project</h1>
+      <div className="mx-auto max-w-3xl px-4 py-8">
+        <h1 className="text-3xl font-bold text-slate-900">New Project</h1>
         <p className="mt-2 text-slate-600">
           Enter the property details to start a new inspection.
         </p>
 
         <form
           onSubmit={handleSubmit}
-          className="mt-8 space-y-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+          className="mt-8 space-y-5 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"
         >
           <div>
             <label className="mb-2 block text-sm font-medium text-slate-700">
@@ -75,7 +80,7 @@ export default function NewProjectPage() {
               value={projectName}
               onChange={(e) => setProjectName(e.target.value)}
               placeholder="1000 Quaint Rd"
-              className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none"
+              className="w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none"
             />
           </div>
 
@@ -88,7 +93,7 @@ export default function NewProjectPage() {
               value={clientName}
               onChange={(e) => setClientName(e.target.value)}
               placeholder="Client Name"
-              className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none"
+              className="w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none"
             />
           </div>
 
@@ -101,7 +106,7 @@ export default function NewProjectPage() {
               value={propertyAddress}
               onChange={(e) => setPropertyAddress(e.target.value)}
               placeholder="1000 Quaint Rd, Oakland, CA 94610"
-              className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none"
+              className="w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none"
             />
           </div>
 
@@ -113,13 +118,13 @@ export default function NewProjectPage() {
               type="date"
               value={inspectionDate}
               onChange={(e) => setInspectionDate(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none"
+              className="w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none"
             />
           </div>
 
           <button
             type="submit"
-            className="rounded-xl bg-slate-900 px-5 py-3 text-white"
+            className="rounded-2xl bg-slate-900 px-5 py-3 text-white"
           >
             Create Project
           </button>
