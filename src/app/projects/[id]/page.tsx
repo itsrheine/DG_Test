@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type IssueType = "repair" | "improve" | "monitor" | "safety";
 
@@ -18,6 +18,40 @@ export default function ProjectDetailPage() {
   });
   const [notes, setNotes] = useState("");
   const [photoCount, setPhotoCount] = useState(0);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("project-1-service-walks");
+
+    if (saved) {
+        const data = JSON.parse(saved);
+
+        setMaterials(data.materials || []);
+        setCondition(data.condition || "");
+        setIssueFlags(data.issueFlags || {
+            repair: false,
+            improve: false,
+            monitor: false,
+            safety: false,
+        });
+        setNotes(data.notes || "");
+        setPhotoCount(data.photoCount || 0);
+    }
+  }, []);
+
+  useEffect(() => {
+    const data = {
+        materials,
+        condition,
+        issueFlags,
+        notes,
+        photoCount,
+    };
+
+    localStorage.setItem(
+        "project-1-service-walks",
+        JSON.stringify(data)
+    );
+  }, [materials, condition, issueFlags, notes, photoCount]);
 
   const materialOptions = ["Concrete", "Brick", "Pavers", "Stone", "Asphalt"];
   const conditionOptions = ["Good", "Marginal", "Poor"];
