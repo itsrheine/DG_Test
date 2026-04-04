@@ -44,8 +44,20 @@ export default function NewProjectPage() {
 
   return (
     <main className="min-h-screen bg-slate-50">
-      <div className="mx-auto max-w-3xl px-6 py-12">
-        <h1 className="text-3xl font-bold text-slate-900">New Project</h1>
+      <div className="mx-auto max-w-3xl px-4 py-8">
+
+      <div className="mb-6 flex items-center justify-between">
+        <button
+          onClick={() => router.push("/dashboard")}
+          className="text-sm text-slate-600"
+        >
+          ← Back
+        </button>
+
+        <span className="text-sm text-slate-400">New Project</span>
+      </div>
+
+      <h1 className="text-2xl font-semibold">New Project</h1>
         <p className="mt-2 text-slate-600">
           Enter the property details to start a new inspection.
         </p>
