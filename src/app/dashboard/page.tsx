@@ -14,7 +14,7 @@ type Project = {
   address: string;
   inspection_date: string;
   created_at: string;
-  status: "active" | "archived";
+  status: "draft" | "completed" | "archived";
 };
 
 export default function DashboardPage() {
@@ -169,9 +169,15 @@ async function handleDelete(projectId: string) {
                       </p>
                     </div>
 
-                    <span className="rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-700">
-                      Draft
-                    </span>
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-xs ${
+                          project.status === "completed"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-slate-100 text-slate-600"
+                        }`}
+                      >
+                        {project.status === "completed" ? "Completed" : "Draft"}
+                      </span>
                   </div>
                 </Link>
 
@@ -200,7 +206,7 @@ async function handleDelete(projectId: string) {
 
                       setProjects((prev) =>
                         prev.map((p) =>
-                          p.id === project.id ? { ...p, status: "active" as const } : p
+                          p.id === project.id ? { ...p, status: "draft" as const } : p
                         )
                       );
                     }}

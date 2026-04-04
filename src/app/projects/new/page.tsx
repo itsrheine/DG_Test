@@ -45,7 +45,7 @@ export default function NewProjectPage() {
           client: clientName || "No Client",
           address: propertyAddress || "No Address",
           inspection_date: inspectionDate || "",
-          status: "active",
+          status: "draft",
         },
       ])
       .select()
