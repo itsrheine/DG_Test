@@ -1,6 +1,38 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
+  const supabase = createClient();
+  const router = useRouter();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setLoading(true);
+    setMessage("");
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      setMessage(error.message);
+    } else {
+      router.push("/dashboard");
+    }
+
+    setLoading(false);
+  }
+
   return (
     <main className="min-h-screen bg-slate-100 flex items-center justify-center px-4">
       <div className="w-full max-w-md rounded-3xl bg-white p-8 shadow-sm border border-slate-200">
@@ -14,13 +46,15 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <form className="space-y-4">
+        <form onSubmit={handleLogin} className="space-y-4">
           <div>
             <label className="mb-2 block text-sm font-medium text-slate-700">
               Email
             </label>
             <input
               type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
               className="w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none"
             />
@@ -32,6 +66,8 @@ export default function LoginPage() {
             </label>
             <input
               type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               className="w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none"
             />
@@ -39,11 +75,16 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            className="w-full rounded-2xl bg-slate-900 px-4 py-3 text-white"
+            disabled={loading}
+            className="w-full rounded-2xl bg-slate-900 px-4 py-3 text-white disabled:opacity-60"
           >
-            Log In
+            {loading ? "Logging in..." : "Log In"}
           </button>
         </form>
+
+        {message ? (
+          <p className="mt-4 text-sm text-slate-600">{message}</p>
+        ) : null}
 
         <div className="mt-6 text-center space-y-2">
           <div>
