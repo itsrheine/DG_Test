@@ -476,6 +476,31 @@ function removePhoto(indexToRemove: number) {
                   No report text yet. Start checking boxes and adding notes.
                 </p>
               )}
+              {photos.length > 0 ? (
+  <>
+    <p className="mt-6 text-sm font-semibold uppercase tracking-wide text-slate-500">
+      Photos
+    </p>
+
+    <div className="mt-3 grid grid-cols-2 gap-3">
+      {photos.map((photo, index) => (
+        <div
+          key={index}
+          className="rounded-xl border border-slate-200 bg-white p-2"
+        >
+          <img
+            src={photo}
+            alt={`Report photo ${index + 1}`}
+            className="h-32 w-full rounded-lg object-cover"
+          />
+          <p className="mt-2 text-xs text-slate-500">
+            Photo {index + 1}
+          </p>
+        </div>
+      ))}
+    </div>
+  </>
+) : null}
             </div>
           </section>
         </div>
