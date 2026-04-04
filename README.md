@@ -121,6 +121,23 @@ Practice home inspection app using Next.js
 - Notification preferences
 - Billing dashboard
 
+### AI Features (Future)
+- Voice-to-text inspection input (talk instead of typing)
+- AI-assisted comment generation
+- Smart suggestions based on selected conditions
+- Conversational assistant for inspectors (hands-free workflow)
+- Natural language report editing
+
+---
+
+## Known Issues & Improvements
+This project is actively being developed
+
+Current bugs and feature requests are tracked in the Issues tab:
+https://github.com/itsrheine/DG_Test/issues
+
+Feel free to contribute or report issues.
+
 ---
 
 ### Get Started (Prototype)
