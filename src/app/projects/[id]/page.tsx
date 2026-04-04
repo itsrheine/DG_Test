@@ -4,8 +4,15 @@ import { useEffect, useMemo, useState } from "react";
 
 type IssueType = "repair" | "improve" | "monitor" | "safety";
 
-export default function ProjectDetailPage() {
-  const [projectName] = useState("Inspection Project #1");
+export default function ProjectDetailPage({
+  params,
+}: {
+  params: { id: string };
+}) {
+  const projectId = params.id;
+  const storageKey = `project-${projectId}-service-walks`;
+
+  const [projectName] = useState(`Inspection Project #${projectId}`);
   const [sectionName] = useState("Service Walks");
 
   const [materials, setMaterials] = useState<string[]>([]);
@@ -20,7 +27,7 @@ export default function ProjectDetailPage() {
   const [photoCount, setPhotoCount] = useState(0);
 
   useEffect(() => {
-    const saved = localStorage.getItem("project-1-service-walks");
+    const saved = localStorage.getItem(storageKey);
 
     if (saved) {
         const data = JSON.parse(saved);
@@ -36,7 +43,7 @@ export default function ProjectDetailPage() {
         setNotes(data.notes || "");
         setPhotoCount(data.photoCount || 0);
     }
-  }, []);
+  }, [storageKey]);
 
   useEffect(() => {
     const data = {
@@ -47,11 +54,9 @@ export default function ProjectDetailPage() {
         photoCount,
     };
 
-    localStorage.setItem(
-        "project-1-service-walks",
-        JSON.stringify(data)
-    );
-  }, [materials, condition, issueFlags, notes, photoCount]);
+    localStorage.setItem(storageKey,
+        JSON.stringify(data));
+  }, [storageKey, materials, condition, issueFlags, notes, photoCount]);
 
   const materialOptions = ["Concrete", "Brick", "Pavers", "Stone", "Asphalt"];
   const conditionOptions = ["Good", "Marginal", "Poor"];
