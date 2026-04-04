@@ -21,14 +21,20 @@ export default function ProjectDetailPage() {
   const params = useParams();
   const projectId = params?.id as string;
 
-  const storageKey = projectId
-    ? `project-${projectId}-service-walks`
-    : "project-temp-service-walks";
-
   const [project, setProject] = useState<Project | null>(null);
-  const [sectionName] = useState("Service Walks");
+    const sections = [
+    "Service Walks",
+    "Driveway",
+    "Porch",
+    "Stairs",
+    ];
 
-  const [materials, setMaterials] = useState<string[]>([]);
+  const [sectionName, setSectionName] = useState(sections[0]);
+  const storageKey = projectId
+    ? `project-${projectId}-${sectionName}`
+    : `project-temp-${sectionName}`;
+
+    const [materials, setMaterials] = useState<string[]>([]);
   const [condition, setCondition] = useState<string>("");
   const [issueFlags, setIssueFlags] = useState<Record<IssueType, boolean>>({
     repair: false,
@@ -286,7 +292,21 @@ function removePhoto(indexToRemove: number) {
           <section className="rounded-2xl border bg-white p-6 shadow-sm w-full">
             <h2 className="text-2xl font-semibold text-slate-900">Grounds</h2>
             <p className="mt-1 text-slate-600">{sectionName}</p>
-
+                <div className="mt-4 flex flex-wrap gap-2">
+                {sections.map((section) => (
+                    <button
+                    key={section}
+                    onClick={() => setSectionName(section)}
+                    className={`rounded-xl px-4 py-2 text-sm ${
+                        sectionName === section
+                        ? "bg-slate-900 text-white"
+                        : "bg-white border border-slate-300 text-slate-700"
+                    }`}
+                    >
+                    {section}
+                    </button>
+                ))}
+                </div>
             <div className="mt-6">
               <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
                 Material
