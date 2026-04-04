@@ -13,6 +13,7 @@ type Project = {
   address: string;
   inspectionDate: string;
   createdAt: string;
+  status: "active" | "archived";
 };
 
 type SavedSectionData = {
@@ -366,7 +367,6 @@ function buildComments(section: string, data: SavedSectionData) {
 >
   {isSaving ? "Saving..." : saveMessage ? "Saved ✓" : "Save"}
 </button>
-
     </div>
   </div>
       <div className="mx-auto max-w-7xl px-6 py-10">

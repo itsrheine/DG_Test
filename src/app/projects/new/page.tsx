@@ -10,6 +10,7 @@ type Project = {
   address: string;
   inspectionDate: string;
   createdAt: string;
+  status: "active" | "archived";
 };
 
 export default function NewProjectPage() {
@@ -30,6 +31,7 @@ export default function NewProjectPage() {
       address: propertyAddress || "No Address",
       inspectionDate: inspectionDate || "",
       createdAt: new Date().toISOString(),
+      status: "active",
     };
 
     const existingProjects = localStorage.getItem("projects");
