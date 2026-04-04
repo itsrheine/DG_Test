@@ -144,21 +144,27 @@ async function handleDelete(projectId: string) {
             visibleProjects.map((project) => (
               <div
                 key={project.id}
-                className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+                className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm"
               >
                 <Link href={`/projects/${project.id}`} className="block">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h2 className="text-xl font-semibold text-slate-900">
-                        {project.name}
-                      </h2>
-                      <p className="mt-1 text-sm text-slate-600">
+                      <div className="space-y-0.5">
+                        <h2 className="text-xl font-semibold text-slate-900 leading-tight">
+                          {project.name}
+                        </h2>
+
+                        <p className="text-[11px] text-slate-500 font-mono">
+                          #{project.id.slice(0, 8)}
+                        </p>
+                      </div>
+                      <p className="mt-1 text-sm text-slate-600 leading-tight">
                         Client: {project.client}
                       </p>
-                      <p className="mt-1 text-sm text-slate-600">
+                      <p className="mt-1 text-sm text-slate-600 leading-tight">
                         Address: {project.address}
                       </p>
-                      <p className="mt-1 text-sm text-slate-600">
+                      <p className="mt-1 text-sm text-slate-600 leading-tight">
                         Inspection Date: {project.inspection_date || "Not set"}
                       </p>
                     </div>

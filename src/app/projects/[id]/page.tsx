@@ -4,16 +4,18 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import BottomNav from "@/components/BottomNav";
+import { createClient } from "@/lib/supabase/client";
 
 type IssueType = "repair" | "improve" | "monitor" | "safety";
 
 type Project = {
   id: string;
+  user_id: string;
   name: string;
   client: string;
   address: string;
-  inspectionDate: string;
-  createdAt: string;
+  inspection_date: string;
+  created_at: string;
   status: "active" | "archived";
 };
 
@@ -27,9 +29,12 @@ type SavedSectionData = {
 
 export default function ProjectDetailPage() {
   const router = useRouter();
+  const supabase = createClient();
 
   const params = useParams();
   const projectId = params?.id as string;
+
+  const [copied, setCopied] = useState(false);
 
   const [project, setProject] = useState<Project | null>(null);
     const sections = [
@@ -63,15 +68,26 @@ export default function ProjectDetailPage() {
   const materialOptions = ["Concrete", "Brick", "Pavers", "Stone", "Asphalt"];
   const conditionOptions = ["Good", "Marginal", "Poor"];
 
-  useEffect(() => {
-    const savedProjects = localStorage.getItem("projects");
-    if (!savedProjects || !projectId) return;
+useEffect(() => {
+  async function loadProject() {
+    if (!projectId) return;
 
-    const projects: Project[] = JSON.parse(savedProjects);
-    const matchingProject = projects.find((p) => p.id === projectId) || null;
+    const { data, error } = await supabase
+      .from("projects")
+      .select("*")
+      .eq("id", projectId)
+      .single();
 
-    setProject(matchingProject);
-  }, [projectId]);
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setProject(data);
+  }
+
+  loadProject();
+}, [projectId, supabase]);
 
 useEffect(() => {
   if (!projectId) return;
@@ -343,6 +359,17 @@ function buildComments(section: string, data: SavedSectionData) {
   return comments;
 }
 
+async function handleCopyProjectId() {
+  if (!projectId) return;
+
+  await navigator.clipboard.writeText(projectId.slice(0, 8));
+  setCopied(true);
+
+  setTimeout(() => {
+    setCopied(false);
+  }, 1200);
+}
+
   return (
     <main className="min-h-screen bg-slate-50 pb-20">
           <div className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur">
@@ -371,18 +398,35 @@ function buildComments(section: string, data: SavedSectionData) {
     </div>
   </div>
       <div className="mx-auto max-w-7xl px-6 py-10">
-        <div className="mb-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <p className="text-sm text-slate-500">Project</p>
-          <h1 className="mt-1 text-3xl font-bold text-slate-900">
-            {project?.name || `Inspection Project #${projectId || "..."}`}
-          </h1>
+        <div className="mb-8 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="flex items-start justify-between">
+            <div>
+              <div className="space-y-0.5">
+                <p className="text-xs text-slate-500">
+                  Project <span className="font-mono">#{projectId?.slice(0, 8)}</span>
+                </p>
 
-          <div className="mt-3 space-y-1 text-slate-600">
-            <p>Client: {project?.client || "No client yet"}</p>
-            <p>Address: {project?.address || "No address yet"}</p>
-            <p>
-              Inspection Date: {project?.inspectionDate || "No inspection date yet"}
-            </p>
+                <h1 className="text-xl font-semibold leading-tight text-slate-900">
+                  {project?.name || "Inspection Project"}
+                </h1>
+              </div>
+
+              <div className="mt-3 space-y-[2px]">
+                <p className="text-sm leading-tight text-slate-600">
+                  Client: {project?.client || "No client yet"}
+                </p>
+                <p className="text-sm leading-tight text-slate-600">
+                  Address: {project?.address || "No address yet"}
+                </p>
+                <p className="text-sm leading-tight text-slate-600">
+                  Inspection Date: {project?.inspection_date || "No inspection date yet"}
+                </p>
+              </div>
+            </div>
+
+            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">
+              Draft
+            </span>
           </div>
         </div>
 
