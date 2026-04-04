@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
+import BottomNav from "@/components/BottomNav";
 
 type Project = {
   id: string;
@@ -44,7 +45,7 @@ export default function NewProjectPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50">
+    <main className="min-h-screen bg-slate-50 pb-20">
       <div className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4">
           <button
@@ -132,6 +133,7 @@ export default function NewProjectPage() {
           </button>
         </form>
       </div>
+      <BottomNav />
     </main>
   );
 }

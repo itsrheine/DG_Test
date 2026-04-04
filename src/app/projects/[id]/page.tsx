@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
+import BottomNav from "@/components/BottomNav";
 
 type IssueType = "repair" | "improve" | "monitor" | "safety";
 
@@ -343,7 +344,7 @@ function buildComments(section: string, data: SavedSectionData) {
 }
 
   return (
-    <main className="min-h-screen bg-slate-50">
+    <main className="min-h-screen bg-slate-50 pb-20">
           <div className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur">
     <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
 
@@ -692,6 +693,7 @@ function buildComments(section: string, data: SavedSectionData) {
           </section>
         </div>
       </div>
+      <BottomNav />
     </main>
   );
 }

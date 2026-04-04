@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import BottomNav from "@/components/BottomNav";
 
 type Project = {
   id: string;
@@ -185,31 +186,7 @@ function handleDelete(projectId: string) {
           )}
         </div>
       </div>
-      <div className="fixed bottom-0 left-0 right-0 border-t border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-md justify-around py-3">
-
-          <Link href="/dashboard" className="flex flex-col items-center text-slate-900">
-            <span>🏠</span>
-            <span className="text-xs">Home</span>
-          </Link>
-
-          <Link href="/projects" className="flex flex-col items-center text-slate-500">
-            <span>📁</span>
-            <span className="text-xs">Projects</span>
-          </Link>
-
-          <Link href="/notes" className="flex flex-col items-center text-slate-500">
-            <span>📝</span>
-            <span className="text-xs">Notes</span>
-          </Link>
-
-          <Link href="/settings" className="flex flex-col items-center text-slate-500">
-            <span>⚙️</span>
-            <span className="text-xs">Settings</span>
-          </Link>
-
-        </div>
-      </div>
+      <BottomNav />
     </main>
   );
 }
