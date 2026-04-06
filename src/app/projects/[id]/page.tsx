@@ -10,6 +10,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import BottomNav from "@/components/BottomNav";
 import { createClient } from "@/lib/supabase/client";
+import { uploadProjectPhoto, deleteProjectPhoto } from "@/lib/photo-storage";
 
 type IssueType = "repair" | "improve" | "monitor" | "safety";
 
@@ -24,12 +25,18 @@ type Project = {
   status: "draft" | "completed" | "archived";
 };
 
+type Photo = {
+  url: string;
+  caption: string;
+  path?: string; // 👈 THIS is the new part
+};
+
 type SavedSectionData = {
   materials: string[];
   condition: string;
   issueFlags: Record<IssueType, boolean>;
   notes: string;
-  photos: any[];
+  photos: Photo[];
 };
 
 export default function ProjectDetailPage() {
@@ -61,7 +68,7 @@ export default function ProjectDetailPage() {
     safety: false,
   });
   const [notes, setNotes] = useState("");
-  const [photos, setPhotos] = useState<any[]>([]);
+  const [photos, setPhotos] = useState<Photo[]>([]);
 
   const [loaded, setLoaded] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
@@ -286,32 +293,46 @@ function issueButtonClass(selected: boolean) {
       : "border-slate-300 bg-white text-slate-800"
   }`;
 }
-function handlePhotoUpload(event: React.ChangeEvent<HTMLInputElement>) {
+
+async function handlePhotoUpload(event: React.ChangeEvent<HTMLInputElement>) {
   const files = event.target.files;
-  if (!files || files.length === 0) return;
+  if (!files || files.length === 0 || !projectId) return;
 
-  Array.from(files).forEach((file) => {
-    const reader = new FileReader();
+  try {
+    for (const file of Array.from(files)) {
+      const uploaded = await uploadProjectPhoto(projectId, file);
 
-    reader.onloadend = () => {
-      const result = reader.result;
-      if (typeof result === "string") {
-        setPhotos((prev) => [
-  ...prev,
-  { url: result, caption: "" }
-]);
-      }
-    };
-
-    reader.readAsDataURL(file);
-  });
+      setPhotos((prev) => [
+        ...prev,
+        {
+          url: uploaded.url,
+          path: uploaded.path,
+          caption: "",
+        },
+      ]);
+    }
+  } catch (error) {
+    console.error(error);
+    alert("Photo upload failed");
+  }
 
   event.target.value = "";
 }
 
-function removePhoto(indexToRemove: number) {
-  setPhotos((prev) => prev.filter((_, index) => index !== indexToRemove));
-}  
+async function removePhoto(indexToRemove: number) {
+  try {
+    const photoToRemove = photos[indexToRemove];
+
+    if (photoToRemove?.path) {
+      await deleteProjectPhoto(photoToRemove.path);
+    }
+
+    setPhotos((prev) => prev.filter((_, index) => index !== indexToRemove))
+  } catch (error) {
+    console.error(error);
+    alert("Failed to remove photo");
+  }
+}
 
 function buildComments(section: string, data: SavedSectionData) {
   const comments: string[] = [];
