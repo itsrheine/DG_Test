@@ -1,5 +1,10 @@
 "use client";
 
+import {
+  loadSectionData,
+  saveSectionData,
+  loadAllSections,
+} from "@/lib/inspection-sections";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
@@ -35,6 +40,7 @@ export default function ProjectDetailPage() {
   const projectId = params?.id as string;
 
   const [copied, setCopied] = useState(false);
+  const [fullReportSections, setFullReportSections] = useState<any[]>([]);
 
   const [project, setProject] = useState<Project | null>(null);
     const sections = [
@@ -45,11 +51,8 @@ export default function ProjectDetailPage() {
     ];
 
   const [sectionName, setSectionName] = useState(sections[0]);
-  const storageKey = projectId
-    ? `project-${projectId}-${sectionName}`
-    : `project-temp-${sectionName}`;
 
-    const [materials, setMaterials] = useState<string[]>([]);
+  const [materials, setMaterials] = useState<string[]>([]);
   const [condition, setCondition] = useState<string>("");
   const [issueFlags, setIssueFlags] = useState<Record<IssueType, boolean>>({
     repair: false,
@@ -90,55 +93,72 @@ useEffect(() => {
 }, [projectId, supabase]);
 
 useEffect(() => {
-  if (!projectId) return;
+  async function fetchSection() {
+    if (!projectId) return;
 
-  const saved = localStorage.getItem(storageKey);
+    try {
+      const data = await loadSectionData(projectId, sectionName);
 
-  if (saved) {
-    const data = JSON.parse(saved);
-
-    setMaterials(data.materials || []);
-    setCondition(data.condition || "");
-    setIssueFlags(
-      data.issueFlags || {
-        repair: false,
-        improve: false,
-        monitor: false,
-        safety: false,
+      if (data) {
+        setMaterials(data.materials || []);
+        setCondition(data.condition || "");
+        setIssueFlags(
+          data.issueFlags || {
+            repair: false,
+            improve: false,
+            monitor: false,
+            safety: false,
+          }
+        );
+        setNotes(data.notes || "");
+        setPhotos(data.photos || []);
+      } else {
+        setMaterials([]);
+        setCondition("");
+        setIssueFlags({
+          repair: false,
+          improve: false,
+          monitor: false,
+          safety: false,
+        });
+        setNotes("");
+        setPhotos([]);
       }
-    );
-    setNotes(data.notes || "");
-    setPhotos(data.photos || []);
-  } else {
-    setMaterials([]);
-    setCondition("");
-    setIssueFlags({
-      repair: false,
-      improve: false,
-      monitor: false,
-      safety: false,
-    });
-    setNotes("");
-    setPhotos([]);
+
+      setLoaded(true);
+    } catch (error) {
+      console.error(error);
+    }
   }
 
-  setLoaded(true);
-}, [projectId, storageKey]);
+  fetchSection();
+}, [projectId, sectionName]);
 
-function handleSave() {
+useEffect(() => {
+  refreshFullReport();
+}, [projectId, sectionName]);
+
+async function handleSave() {
   if (!projectId) return;
 
-  const data = {
-    materials,
-    condition,
-    issueFlags,
-    notes,
-    photos,
-  };
+  setIsSaving(true);
 
-  localStorage.setItem(storageKey, JSON.stringify(data));
+  try {
+    await saveSectionData(projectId, "Grounds", sectionName, {
+      materials,
+      condition,
+      issueFlags,
+      notes,
+      photos,
+    });
 
-  setSaveMessage("Saved");
+    setSaveMessage("Saved");
+    await refreshFullReport();
+  } catch (error: any) {
+  console.error("SAVE SECTION ERROR:", error);
+  alert(error?.message || JSON.stringify(error));
+  setSaveMessage("Error");
+}
 
   setTimeout(() => {
     setIsSaving(false);
@@ -220,35 +240,7 @@ function handleSave() {
 
     return comments;
   }, [materials, condition, issueFlags, notes, photos]);
-const fullReportSections = sections
-  .map((section) => {
-    const key = projectId
-      ? `project-${projectId}-${section}`
-      : `project-temp-${section}`;
 
-    const saved = localStorage.getItem(key);
-    if (!saved) return null;
-
-    const data: SavedSectionData = JSON.parse(saved);
-
-    const comments = buildComments(section, data);
-
-    const hasContent =
-      data.materials.length > 0 ||
-      data.condition ||
-      Object.values(data.issueFlags).some(Boolean) ||
-      data.notes.trim() ||
-      data.photos.length > 0;
-
-    if (!hasContent) return null;
-
-    return {
-      section,
-      comments,
-      photos: data.photos,
-    };
-  })
-  .filter(Boolean);
 function materialButtonClass(selected: boolean) {
   return `rounded-2xl border px-4 py-3 text-sm font-medium transition ${
     selected
@@ -368,6 +360,39 @@ async function handleCopyProjectId() {
   setTimeout(() => {
     setCopied(false);
   }, 1200);
+}
+
+async function refreshFullReport() {
+  if (!projectId) return;
+
+  try {
+    const rows = await loadAllSections(projectId);
+
+    const formatted = (rows || [])
+      .map((row: any) => {
+        const data = row.data;
+
+        const hasContent =
+          data?.materials?.length > 0 ||
+          data?.condition ||
+          Object.values(data?.issueFlags || {}).some(Boolean) ||
+          data?.notes?.trim() ||
+          data?.photos?.length > 0;
+
+        if (!hasContent) return null;
+
+        return {
+          section: row.section_name,
+          comments: buildComments(row.section_name, data),
+          photos: data.photos || [],
+        };
+      })
+      .filter(Boolean);
+
+    setFullReportSections(formatted);
+  } catch (error) {
+    console.error(error);
+  }
 }
 
   return (
