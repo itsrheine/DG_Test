@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import BottomNav from "@/components/BottomNav";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import { loadAllSections } from "@/lib/inspection-sections";
 
 type Project = {
   id: string;
@@ -21,7 +22,12 @@ export default function DashboardPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const router = useRouter();
   const supabase = createClient();
+  const [projectProgress, setProjectProgress] = useState<
+    Record<string, { completed: number; total: number; percent: number }>
+  >({});
   const [view, setView] = useState<"current" | "archived">("current");
+
+  const totalSections = 4;
 
 useEffect(() => {
   async function loadProjects() {
@@ -46,6 +52,34 @@ useEffect(() => {
 
     if (data) {
       setProjects(data as Project[]);
+      const progressMap: Record<
+  string,
+  { completed: number; total: number; percent: number }
+> = {};
+
+  for (const project of data as Project[]) {
+    const rows = await loadAllSections(project.id);
+
+    const completedSections = rows.filter((row: any) => {
+      const sectionData = row.data;
+
+      return (
+        sectionData?.materials?.length > 0 ||
+        sectionData?.condition ||
+        Object.values(sectionData?.issueFlags || {}).some(Boolean) ||
+        sectionData?.notes?.trim() ||
+        sectionData?.photos?.length > 0
+      );
+    }).length;
+
+    progressMap[project.id] = {
+      completed: completedSections,
+      total: totalSections,
+      percent: Math.round((completedSections / totalSections) * 100),
+    };
+  }
+
+setProjectProgress(progressMap);
     }
   }
 
@@ -169,6 +203,24 @@ const visibleProjects = projects.filter((project) =>
                       <p className="mt-1 text-sm text-slate-600 leading-tight">
                         Inspection Date: {project.inspection_date || "Not set"}
                       </p>
+                      <p className="mt-2 text-xs text-slate-500">
+                        {projectProgress[project.id]
+                          ? `${projectProgress[project.id].completed} / ${projectProgress[project.id].total} sections complete`
+                          : "0 / 4 sections complete"}
+                      </p>
+
+                      <div className="mt-2 h-2 w-full rounded-full bg-slate-100">
+                        <div
+                          className="h-2 rounded-full bg-slate-900"
+                          style={{
+                            width: `${
+                              projectProgress[project.id]
+                                ? projectProgress[project.id].percent
+                                : 0
+                            }%`,
+                          }}
+                        />
+                      </div>
                     </div>
 
                       <span
