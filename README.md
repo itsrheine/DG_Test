@@ -14,7 +14,8 @@ Practice home inspection app using Next.js
 
 ### State & Storage
 - React Hooks
-- localStorage (temporary)
+- Supabase (projects + inspection sections)
+- Local UI state (temporary interactions only)
 
 ## Features
 
@@ -26,12 +27,21 @@ Practice home inspection app using Next.js
 - Status tracking (Draft / Completed)
 - Compact mobile-friendly project cards
 
+### Project Management
+- Unique project IDs (copyable)
+- Project status system:
+    - Draft
+    - Completed
+    - Archived
+- Mark projects as completed from project detail page
+- Real-time status updates synced with database
+
 ### Inspection Workflow
 - Section-based inspection
 - Select materials, condition, and issue types
 - Add inspector notes
-- Auto-save section data
-- Persistent project state (status: Draft / Completed)
+- Save section data per project + section
+- Persistent project state (Draft / Completed)
 
 ### Photo Upload
 - Upload multiple photos per section
@@ -53,6 +63,7 @@ Practice home inspection app using Next.js
 
 ### Authentication
 - Login / Sign Up / Forgot Password Flow
+- Supabase Auth integration
 - Session-based authentication
 - Protected routes for authenticated users
 
@@ -60,21 +71,13 @@ Practice home inspection app using Next.js
 
 ## How It Works
 - Project data is stored in Supabase (cloud database)
-- Section data is currently stored in localStorage (temporary)
+- Section data is stored in Supabase per project and section
 - Each section is saved independently per project
 - Report preview dynamically builds from saved section data
 - Projects can be: 
     - Active
     - Archived
     - Deleted
-
----
-
-### Project Management
-- Unique project ID generation (short format for UI)
-- Auto-save project data
-- Status tracking (Draft / Completed / Archived)
-- Real-time updates between dashboard and project detail view
 
 ---
 
@@ -88,7 +91,7 @@ Practice home inspection app using Next.js
 
 ## In Progress (Upcoming Features)
 - Improve authentication flow (session handling, persistence)
-- Cloud database (replace localStorage)
+- Optimized Supabase data structure and performance
 
 ### Usability Improvements
 - Improve navigation between inspection sections
@@ -96,11 +99,9 @@ Practice home inspection app using Next.js
 - Streamlined project creation and editing
 - Better mobile interaction (tap, swipe, gestures)
 
-### UI Enhancements (Cosmetic)
-- Visual polish and layout improvements
-- Improved spacing, typography, and readability
-- Icon-based navigation (mobile-friendly)
-- Consistent design system across all pages
+### Data & Sync
+- Improve reliability and performance of Supabase data
+- Enable full cross-device syncing
 
 ### Billing & Payments
 - Subscription plans (monthly/yearly)
@@ -116,7 +117,6 @@ Practice home inspection app using Next.js
 - Export report to Word/PDF
 - Customizable report templates
 - Shareable report links (PDF/Password Protected) (Ask D if ok)
-- Customer view access for specific reports/projects (Ask D if ok)
 - Client portal to view completed inspection reports (Ask D if ok)
 
 ### Inspection Expansion
@@ -147,17 +147,24 @@ Practice home inspection app using Next.js
 - Notification preferences
 - Billing dashboard
 
-### Data Migration
-- Move section data from localStorage to Supabase
-- Enable full cloud sync across devices
-- Improve data reliability and persistence
-
 ### AI Features (Future)
 - Voice-to-text inspection input (talk instead of typing)
 - AI-assisted comment generation
 - Smart suggestions based on selected conditions
 - Conversational assistant for inspectors (hands-free workflow)
 - Natural language report editing
+
+---
+
+## Environment Variables
+
+Create a `.env.local` file:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=your_url_here
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_key_here
+
+```
 
 ---
 

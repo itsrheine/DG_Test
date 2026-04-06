@@ -21,7 +21,7 @@ export default function DashboardPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const router = useRouter();
   const supabase = createClient();
-  const [view, setView] = useState<"active" | "archived">("active");
+  const [view, setView] = useState<"current" | "archived">("current");
 
 useEffect(() => {
   async function loadProjects() {
@@ -86,9 +86,11 @@ async function handleDelete(projectId: string) {
   setProjects((prev) => prev.filter((project) => project.id !== projectId));
 }
 
-    const visibleProjects = projects.filter(
-    (project) => project.status === view
-    );
+const visibleProjects = projects.filter((project) =>
+  view === "archived"
+    ? project.status === "archived"
+    : project.status === "draft" || project.status === "completed"
+);
 
   return (
     <main className="min-h-screen bg-slate-50 pb-20">
@@ -111,9 +113,9 @@ async function handleDelete(projectId: string) {
 <div className="mt-6 inline-flex rounded-xl border border-slate-200 bg-white p-1">
   <button
     type="button"
-    onClick={() => setView("active")}
+    onClick={() => setView("current")}
     className={`rounded-lg px-4 py-2 text-sm ${
-      view === "active"
+      view === "current"
         ? "bg-slate-900 text-white"
         : "text-slate-700"
     }`}
@@ -136,7 +138,7 @@ async function handleDelete(projectId: string) {
         <div className="mt-8 grid gap-4">
           {visibleProjects.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-slate-500">
-                {view === "active"
+                {view === "current"
                     ? "No active projects yet. Create your first project."
                     : "No archived projects yet."}
             </div>
@@ -182,7 +184,7 @@ async function handleDelete(projectId: string) {
                 </Link>
 
                 <div className="mt-4 flex gap-2">
-                {view === "active" ? (
+                {view === "current" ? (
                     <button
                     type="button"
                     onClick={() => handleArchive(project.id)}
@@ -196,7 +198,7 @@ async function handleDelete(projectId: string) {
                     onClick={async () => {
                       const { error } = await supabase
                         .from("projects")
-                        .update({ status: "active" })
+                        .update({ status: "draft" })
                         .eq("id", project.id);
 
                       if (error) {

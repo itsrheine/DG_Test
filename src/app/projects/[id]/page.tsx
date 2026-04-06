@@ -166,6 +166,27 @@ async function handleSave() {
   }, 1500);
 }
 
+async function handleToggleCompleted() {
+  if (!projectId || !project) return;
+
+  const nextStatus =
+    project.status === "completed" ? "draft" : "completed";
+
+  const { error } = await supabase
+    .from("projects")
+    .update({ status: nextStatus })
+    .eq("id", projectId);
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  setProject((prev) =>
+    prev ? { ...prev, status: nextStatus } : prev
+  );
+}
+
   function toggleMaterial(value: string) {
     setMaterials((prev) =>
       prev.includes(value)
@@ -248,6 +269,7 @@ function materialButtonClass(selected: boolean) {
       : "border-slate-300 bg-white text-slate-800"
   }`;
 }
+
 
 function conditionButtonClass(selected: boolean) {
   return `rounded-2xl border px-4 py-3 text-sm font-medium transition ${
@@ -449,6 +471,7 @@ async function refreshFullReport() {
               </div>
             </div>
 
+            <div className="flex flex-col items-end gap-2">
               <span
                 className={`rounded-full px-2 py-0.5 text-xs ${
                   project?.status === "completed"
@@ -458,6 +481,17 @@ async function refreshFullReport() {
               >
                 {project?.status === "completed" ? "Completed" : "Draft"}
               </span>
+
+              <button
+                type="button"
+                onClick={handleToggleCompleted}
+                className="rounded-lg border border-slate-300 px-2 py-1 text-xs text-slate-600"
+              >
+                {project?.status === "completed"
+                  ? "Mark Draft"
+                  : "Mark Completed"}
+              </button>
+            </div>
           </div>
         </div>
 
