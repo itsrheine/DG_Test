@@ -13,12 +13,15 @@ Practice home inspection app using Next.js
 - View project details (client, address, inspection date)
 - Archive and delete projects
 - Toggle between Active and Archived projects
+- Status tracking (Draft / Completed)
+- Compact mobile-friendly project cards
 
 ### Inspection Workflow
 - Section-based inspection
 - Select materials, condition, and issue types
 - Add inspector notes
 - Auto-save section data
+- Persistent project state (status: Draft / Completed)
 
 ### Photo Upload
 - Upload multiple photos per section
@@ -30,10 +33,24 @@ Practice home inspection app using Next.js
 - Combines all saved sections into a structured report
 - Automatically generates inspection comments based on selections
 
+### Navigation & App Layout
+- Mobile-style bottom navigation (Home, Projects, Notes, Settings)
+- Sticky app header with back navigation and actions
+- Reusable navigation components
+- App-like layout optimized for mobile experience
+
+---
+
+### Authentication
+- Login / Sign Up / Forgot Password Flow
+- Session-based authentication
+- Protected routes for authenticated users
+
 ---
 
 ## How It Works
-- Data is stored locally using `localStorage`
+- Project data is stored in Supabase (cloud database)
+- Section data is currently stored in localStorage (temporary)
 - Each section is saved independently per project
 - Report preview dynamically builds from saved section data
 - Projects can be: 
@@ -49,6 +66,16 @@ Practice home inspection app using Next.js
 - **Styling:** Tailwind CSS
 - **State Management:** React Hooks
 - **Storage:** Browser localStorage (temporary)
+- **Backend / Database:** Supabase
+- **Auth:** Supabase Auth
+
+---
+
+### Project Management
+- Unique project ID generation (short format for UI)
+- Auto-save project data
+- Status tracking (Draft / Completed / Archived)
+- Real-time updates between dashboard and project detail view
 
 ---
 
@@ -61,7 +88,7 @@ Practice home inspection app using Next.js
 ---
 
 ## In Progress (Upcoming Features)
-- User authentication (login system)
+- Improve authentication flow (session handling, persistence)
 - Cloud database (replace localStorage)
 
 ### Usability Improvements
@@ -84,7 +111,7 @@ Practice home inspection app using Next.js
     - Square
     - Apple Pay / Paypal
 - Invoice generation/history
-- Downloadanle receipts and billing records
+- Downloadable receipts and billing records
 
 ### Reporting
 - Export report to Word/PDF
@@ -121,6 +148,11 @@ Practice home inspection app using Next.js
 - Notification preferences
 - Billing dashboard
 
+### Data Migration
+- Move section data from localStorage to Supabase
+- Enable full cloud sync across devices
+- Improve data reliability and persistence
+
 ### AI Features (Future)
 - Voice-to-text inspection input (talk instead of typing)
 - AI-assisted comment generation
@@ -145,3 +177,12 @@ Feel free to contribute or report issues.
 ```bash
 npm install
 npm run dev
+
+```
+
+---
+
+## Screenshots
+
+### Log In Page
+<img src="./screenshots/login page.jpg" width="300" />
