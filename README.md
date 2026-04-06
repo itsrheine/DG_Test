@@ -11,10 +11,12 @@ Practice home inspection app using Next.js
 ### Backend & Database
 - Supabase (PostgreSQL)
 - Supabase Auth
+- Supabase Storage (photo uploads)
 
 ### State & Storage
 - React Hooks
 - Supabase (projects + inspection sections)
+- Supabase Storage (images)
 - Local UI state (temporary interactions only)
 
 ## Features
@@ -45,8 +47,11 @@ Practice home inspection app using Next.js
 
 ### Photo Upload
 - Upload multiple photos per section
+- Images stored in Supabase Storage (cloud)
+- Public URLs used for fast loading and display
 - Add captions to each photo
-- Remove photos easily
+- Remove photos (also deletes from storage)
+- Optimized for performance (no base64 storage)
 
 ### Auto Report Generator
 - Real-time report preview
@@ -72,6 +77,7 @@ Practice home inspection app using Next.js
 ## How It Works
 - Project data is stored in Supabase (cloud database)
 - Section data is stored in Supabase per project and section
+- Photos are stored separately in Supabase Storage and linked via URLs
 - Each section is saved independently per project
 - Report preview dynamically builds from saved section data
 - Projects can be: 
@@ -79,13 +85,26 @@ Practice home inspection app using Next.js
     - Archived
     - Deleted
 
----
-
 ## Design
 - Mobile-first UI
 - Simple, tap-based interactions
 - Clean and minimal interface
 - Built with future app conversion in mind
+
+## File Handling
+- Image uploads handled via Supabase Storage API
+- Unique file paths generated per project
+- Secure and scalabile file management
+- Supports future features like:
+    - PDF report embedding
+    - Client image access
+    - Downloadable reports
+
+## Media Storage
+- Photos are uploaded to Supabase Storage
+- Each image is stored under its project ID
+- Only image URLs and metadata are stored in the database
+- Improves performance and scalability compared to base64 storage
 
 ---
 
