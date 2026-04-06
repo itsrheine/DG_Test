@@ -1,10 +1,20 @@
 # Home Inspection App
 Practice home inspection app using Next.js
 
-## Tech
-- Next.js
+## Tech Stack
+
+### Frontend
+- Next.js (App Router)
 - TypeScript
 - Tailwind CSS
+
+### Backend & Database
+- Supabase (PostgreSQL)
+- Supabase Auth
+
+### State & Storage
+- React Hooks
+- localStorage (temporary)
 
 ## Features
 
@@ -57,17 +67,6 @@ Practice home inspection app using Next.js
     - Active
     - Archived
     - Deleted
-
----
-
-## Stack
-- **Framework:** Next.js (App Router)
-- **Language:** TypeScript
-- **Styling:** Tailwind CSS
-- **State Management:** React Hooks
-- **Storage:** Browser localStorage (temporary)
-- **Backend / Database:** Supabase
-- **Auth:** Supabase Auth
 
 ---
 
