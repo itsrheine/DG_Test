@@ -23,6 +23,7 @@ export default function NotesPage() {
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadNotes() {
@@ -53,22 +54,44 @@ export default function NotesPage() {
     loadNotes();
   }, [router, supabase]);
 
-  async function handleAddNote(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+async function handleAddNote(e: React.FormEvent<HTMLFormElement>) {
+  e.preventDefault();
 
-    if (!title.trim() && !content.trim()) return;
+  if (!title.trim() && !content.trim()) return;
 
-    setSaving(true);
+  setSaving(true);
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-    if (!user) {
-      router.push("/login");
+  if (!user) {
+    router.push("/login");
+    return;
+  }
+
+  if (editingNoteId) {
+    const { data, error } = await supabase
+      .from("notes")
+      .update({
+        title: title.trim() || "Untitled Note",
+        content: content.trim(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", editingNoteId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error(error);
+      setSaving(false);
       return;
     }
 
+    setNotes((prev) =>
+      prev.map((note) => (note.id === editingNoteId ? (data as Note) : note))
+    );
+  } else {
     const { data, error } = await supabase
       .from("notes")
       .insert([
@@ -88,10 +111,25 @@ export default function NotesPage() {
     }
 
     setNotes((prev) => [data as Note, ...prev]);
-    setTitle("");
-    setContent("");
-    setSaving(false);
   }
+
+  setTitle("");
+  setContent("");
+  setEditingNoteId(null);
+  setSaving(false);
+}
+
+function handleEditNote(note: Note) {
+  setEditingNoteId(note.id);
+  setTitle(note.title);
+  setContent(note.content);
+}
+
+function handleCancelEdit() {
+  setEditingNoteId(null);
+  setTitle("");
+  setContent("");
+}
 
   async function handleDeleteNote(noteId: string) {
     const confirmDelete = confirm("Delete this note?");
@@ -149,14 +187,28 @@ export default function NotesPage() {
             />
           </div>
 
-          <div className="mt-4">
+          <div className="mt-4 flex gap-2">
             <button
               type="submit"
               disabled={saving}
               className="rounded-xl bg-slate-900 px-4 py-3 text-white disabled:opacity-60"
             >
-              {saving ? "Saving..." : "Add Note"}
+              {saving
+                ? "Saving..."
+                : editingNoteId
+                ? "Update Note"
+                : "Add Note"}
             </button>
+
+            {editingNoteId ? (
+              <button
+                type="button"
+                onClick={handleCancelEdit}
+                className="rounded-xl border border-slate-300 px-4 py-3 text-slate-700"
+              >
+                Cancel
+              </button>
+            ) : null}
           </div>
         </form>
 
@@ -188,13 +240,23 @@ export default function NotesPage() {
                     </p>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => handleDeleteNote(note.id)}
-                    className="rounded-lg border border-red-300 px-3 py-2 text-xs text-red-600"
-                  >
-                    Delete
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleEditNote(note)}
+                      className="rounded-lg border border-slate-300 px-3 py-2 text-xs text-slate-700"
+                    >
+                      Edit
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteNote(note.id)}
+                      className="rounded-lg border border-red-300 px-3 py-2 text-xs text-red-600"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
               </div>
             ))

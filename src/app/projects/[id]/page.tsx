@@ -28,7 +28,7 @@ type Project = {
 type Photo = {
   url: string;
   caption: string;
-  path?: string; // 👈 THIS is the new part
+  path?: string; 
 };
 
 type SavedSectionData = {
@@ -47,6 +47,7 @@ export default function ProjectDetailPage() {
   const projectId = params?.id as string;
 
   const [copied, setCopied] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [fullReportSections, setFullReportSections] = useState<any[]>([]);
 
   const [project, setProject] = useState<Project | null>(null);
@@ -73,7 +74,8 @@ export default function ProjectDetailPage() {
   const [loaded, setLoaded] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
 
-  const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [removingPhotoIndex, setRemovingPhotoIndex] = useState<number | null>(null);
 
   const materialOptions = ["Concrete", "Brick", "Pavers", "Stone", "Asphalt"];
   const conditionOptions = ["Good", "Marginal", "Poor"];
@@ -298,6 +300,8 @@ async function handlePhotoUpload(event: React.ChangeEvent<HTMLInputElement>) {
   const files = event.target.files;
   if (!files || files.length === 0 || !projectId) return;
 
+  setIsUploadingPhoto(true);
+
   try {
     for (const file of Array.from(files)) {
       const uploaded = await uploadProjectPhoto(projectId, file);
@@ -314,23 +318,28 @@ async function handlePhotoUpload(event: React.ChangeEvent<HTMLInputElement>) {
   } catch (error) {
     console.error(error);
     alert("Photo upload failed");
+  } finally {
+    setIsUploadingPhoto(false);
+    event.target.value = "";
   }
-
-  event.target.value = "";
 }
 
 async function removePhoto(indexToRemove: number) {
   try {
+    setRemovingPhotoIndex(indexToRemove);
+
     const photoToRemove = photos[indexToRemove];
 
     if (photoToRemove?.path) {
       await deleteProjectPhoto(photoToRemove.path);
     }
 
-    setPhotos((prev) => prev.filter((_, index) => index !== indexToRemove))
+    setPhotos((prev) => prev.filter((_, index) => index !== indexToRemove));
   } catch (error) {
     console.error(error);
     alert("Failed to remove photo");
+  } finally {
+    setRemovingPhotoIndex(null);
   }
 }
 
@@ -636,14 +645,21 @@ async function refreshFullReport() {
     Photos
   </label>
 
-  <label className="inline-flex cursor-pointer items-center rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-medium text-slate-800">
-    📸 Upload Photos
+  <label
+    className={`inline-flex items-center rounded-2xl border px-4 py-3 text-sm font-medium ${
+      isUploadingPhoto
+        ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400"
+        : "cursor-pointer border-slate-300 bg-white text-slate-800"
+    }`}
+  >
+    {isUploadingPhoto ? "Uploading..." : "📸 Upload Photos"}
     <input
       type="file"
       accept="image/*"
       multiple
       onChange={handlePhotoUpload}
       className="hidden"
+      disabled={isUploadingPhoto}
     />
   </label>
 
@@ -670,13 +686,18 @@ async function refreshFullReport() {
   placeholder="Add caption..."
   className="mt-2 w-full rounded-xl border px-3 py-2 text-sm"
 />
-          <button
-            type="button"
-            onClick={() => removePhoto(index)}
-            className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-700"
-          >
-            Remove
-          </button>
+        <button
+          type="button"
+          onClick={() => removePhoto(index)}
+          disabled={removingPhotoIndex === index}
+          className={`mt-2 w-full rounded-xl border px-3 py-2 text-sm ${
+            removingPhotoIndex === index
+              ? "cursor-not-allowed border-slate-200 text-slate-400"
+              : "border-slate-300 text-slate-700"
+          }`}
+        >
+          {removingPhotoIndex === index ? "Removing..." : "Remove"}
+        </button>
         </div>
       ))}
     </div>
