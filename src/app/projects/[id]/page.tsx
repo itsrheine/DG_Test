@@ -65,7 +65,6 @@ export default function ProjectDetailPage() {
     readyToComplete: false,
   });
   
-
   const [materials, setMaterials] = useState<string[]>([]);
   const [condition, setCondition] = useState<string>("");
   const [issueFlags, setIssueFlags] = useState<Record<IssueType, boolean>>({
