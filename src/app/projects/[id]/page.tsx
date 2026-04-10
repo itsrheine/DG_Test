@@ -81,6 +81,7 @@ export default function ProjectDetailPage() {
 
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [removingPhotoIndex, setRemovingPhotoIndex] = useState<number | null>(null);
+  const [draggedPhotoIndex, setDraggedPhotoIndex] = useState<number | null>(null);
 
   const materialOptions = ["Concrete", "Brick", "Pavers", "Stone", "Asphalt"];
   const conditionOptions = ["Good", "Marginal", "Poor"];
@@ -376,6 +377,28 @@ async function removePhoto(indexToRemove: number) {
     alert("Failed to remove photo");
   } finally {
     setRemovingPhotoIndex(null);
+  }
+}
+
+async function movePhoto(fromIndex: number, toIndex: number) {
+  if (fromIndex === toIndex) return;
+
+  const updatedPhotos = [...photos];
+  const [movedPhoto] = updatedPhotos.splice(fromIndex, 1);
+  updatedPhotos.splice(toIndex, 0, movedPhoto);
+
+  setPhotos(updatedPhotos);
+
+  if (projectId) {
+    await saveSectionData(projectId, "Grounds", sectionName, {
+      materials,
+      condition,
+      issueFlags,
+      notes,
+      photos: updatedPhotos,
+    });
+
+    await refreshFullReport();
   }
 }
 
@@ -750,13 +773,28 @@ async function refreshProjectProgress() {
       disabled={isUploadingPhoto}
     />
   </label>
-
+  <p className="mt-2 text-xs text-slate-500">
+    Drag photos to reorder them.
+  </p>
   {photos.length > 0 ? (
     <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
       {photos.map((photo, index) => (
         <div
           key={index}
-          className="rounded-2xl border border-slate-200 bg-slate-50 p-2"
+          draggable
+          onDragStart={() => setDraggedPhotoIndex(index)}
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={async () => {
+            if (draggedPhotoIndex === null) return;
+            await movePhoto(draggedPhotoIndex, index);
+            setDraggedPhotoIndex(null);
+          }}
+          onDragEnd={() => setDraggedPhotoIndex(null)}
+          className={`rounded-2xl border bg-slate-50 p-2 ${
+            draggedPhotoIndex === index
+              ? "border-slate-400 opacity-60"
+              : "border-slate-200"
+          }`}
         >
           <img
             src={photo.url}
