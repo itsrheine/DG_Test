@@ -310,18 +310,33 @@ async function handlePhotoUpload(event: React.ChangeEvent<HTMLInputElement>) {
   setIsUploadingPhoto(true);
 
   try {
+    let updatedPhotos = [...photos];
+
     for (const file of Array.from(files)) {
       const uploaded = await uploadProjectPhoto(projectId, file);
 
-      setPhotos((prev) => [
-        ...prev,
+      updatedPhotos = [
+        ...updatedPhotos,
         {
           url: uploaded.url,
           path: uploaded.path,
           caption: "",
         },
-      ]);
+      ];
     }
+
+    setPhotos(updatedPhotos);
+
+    await saveSectionData(projectId, "Grounds", sectionName, {
+      materials,
+      condition,
+      issueFlags,
+      notes,
+      photos: updatedPhotos,
+    });
+
+    await refreshFullReport();
+    await refreshProjectProgress();
   } catch (error) {
     console.error(error);
     alert("Photo upload failed");
@@ -341,7 +356,21 @@ async function removePhoto(indexToRemove: number) {
       await deleteProjectPhoto(photoToRemove.path);
     }
 
-    setPhotos((prev) => prev.filter((_, index) => index !== indexToRemove));
+    const updatedPhotos = photos.filter((_, index) => index !== indexToRemove);
+    setPhotos(updatedPhotos);
+
+    if (projectId) {
+      await saveSectionData(projectId, "Grounds", sectionName, {
+        materials,
+        condition,
+        issueFlags,
+        notes,
+        photos: updatedPhotos,
+      });
+
+      await refreshFullReport();
+      await refreshProjectProgress();
+    }
   } catch (error) {
     console.error(error);
     alert("Failed to remove photo");
