@@ -49,7 +49,6 @@ export default function ProjectDetailPage() {
   const [copied, setCopied] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [fullReportSections, setFullReportSections] = useState<any[]>([]);
-
   const [project, setProject] = useState<Project | null>(null);
     const sections = [
     "Service Walks",
@@ -59,6 +58,13 @@ export default function ProjectDetailPage() {
     ];
 
   const [sectionName, setSectionName] = useState(sections[0]);
+  const [projectProgress, setProjectProgress] = useState({
+    completed: 0,
+    total: sections.length,
+    percent: 0,
+    readyToComplete: false,
+  });
+  
 
   const [materials, setMaterials] = useState<string[]>([]);
   const [condition, setCondition] = useState<string>("");
@@ -145,6 +151,7 @@ useEffect(() => {
 
 useEffect(() => {
   refreshFullReport();
+  refreshProjectProgress();
 }, [projectId, sectionName]);
 
 async function handleSave() {
@@ -163,6 +170,7 @@ async function handleSave() {
 
     setSaveMessage("Saved");
     await refreshFullReport();
+    await refreshProjectProgress();
   } catch (error: any) {
   console.error("SAVE SECTION ERROR:", error);
   alert(error?.message || JSON.stringify(error));
@@ -447,6 +455,41 @@ async function refreshFullReport() {
   }
 }
 
+function calculateSectionHasContent(data: SavedSectionData) {
+  return (
+    data?.materials?.length > 0 ||
+    !!data?.condition ||
+    Object.values(data?.issueFlags || {}).some(Boolean) ||
+    !!data?.notes?.trim() ||
+    data?.photos?.length > 0
+  );
+}
+
+async function refreshProjectProgress() {
+  if (!projectId) return;
+
+  try {
+    const rows = await loadAllSections(projectId);
+
+    const completedCount = (rows || []).filter((row: any) =>
+      calculateSectionHasContent(row.data)
+    ).length;
+
+    const total = sections.length;
+    const percent = Math.round((completedCount / total) * 100);
+    const readyToComplete = completedCount === total;
+
+    setProjectProgress({
+      completed: completedCount,
+      total,
+      percent,
+      readyToComplete,
+    });
+  } catch (error) {
+    console.error(error);
+  }
+}
+
   return (
     <main className="min-h-screen bg-slate-50 pb-20">
           <div className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur">
@@ -498,6 +541,23 @@ async function refreshFullReport() {
                 <p className="text-sm leading-tight text-slate-600">
                   Inspection Date: {project?.inspection_date || "No inspection date yet"}
                 </p>
+                <div className="mt-4">
+                <p className="text-xs text-slate-500">
+                  {projectProgress.completed} / {projectProgress.total} sections complete
+                </p>
+
+                <div className="mt-2 h-2 w-full rounded-full bg-slate-100">
+                  <div
+                    className="h-2 rounded-full bg-slate-900"
+                    style={{ width: `${projectProgress.percent}%` }}
+                  />
+                </div>
+
+                <p className="mt-2 text-xs text-slate-500">
+                  {projectProgress.percent}% complete
+                  {projectProgress.readyToComplete ? " • Ready to mark completed" : ""}
+                </p>
+              </div>
               </div>
             </div>
 
