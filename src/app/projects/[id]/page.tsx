@@ -559,13 +559,23 @@ async function refreshProjectProgress() {
         </p>
         <p className="text-xs text-slate-500">Project Details</p>
       </div>
+    <div className="flex items-center gap-2">
+      <a
+        href={`/projects/${projectId}/report`}
+        target="_blank"
+        rel="noreferrer"
+        className="rounded-full border border-slate-300 px-4 py-2 text-sm text-slate-700"
+      >
+        Export PDF
+      </a>
 
-<button
-  onClick={handleSave}
-  className="rounded-full bg-slate-900 px-4 py-2 text-sm text-white"
->
-  {isSaving ? "Saving..." : saveMessage ? "Saved ✓" : "Save"}
-</button>
+      <button
+        onClick={handleSave}
+        className="rounded-full bg-slate-900 px-4 py-2 text-sm text-white"
+      >
+        {isSaving ? "Saving..." : saveMessage ? "Saved ✓" : "Save"}
+      </button>
+    </div>
     </div>
   </div>
       <div className="mx-auto max-w-7xl px-6 py-10">
