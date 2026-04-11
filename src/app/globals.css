@@ -24,3 +24,17 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@media print {
+  @page {
+    margin: 28mm 16mm 22mm 16mm;
+  }
+
+  body {
+    counter-reset: page;
+  }
+
+  .page-number::after {
+    content: "Page " counter(page);
+  }
+}

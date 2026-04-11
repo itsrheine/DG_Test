@@ -14,6 +14,14 @@ type Project = {
   inspection_date: string;
   created_at: string;
   status: "draft" | "completed" | "archived";
+  is_shared?: boolean;
+  share_token?: string | null;
+};
+
+type Photo = {
+  url: string;
+  caption: string;
+  path?: string;
 };
 
 type SectionRow = {
@@ -29,11 +37,7 @@ type SectionRow = {
       safety: boolean;
     };
     notes: string;
-    photos: Array<{
-      url: string;
-      caption: string;
-      path?: string;
-    }>;
+    photos: Photo[];
   };
 };
 
@@ -81,79 +85,76 @@ function buildComments(section: string, data: SectionRow["data"]) {
   return comments;
 }
 
-function renderCheckboxItem(label: string, checked: boolean) {
-  return (
-    <span className="mr-4 inline-block">
-      {checked ? "☑" : "☐"} {label}
-    </span>
-  );
-}
-
-export default function ProjectReportPage() {
+export default function SharedReportPage() {
   const params = useParams();
-  const projectId = params?.id as string;
+  const token = params?.token as string;
   const supabase = createClient();
 
   const [project, setProject] = useState<Project | null>(null);
   const [sections, setSections] = useState<SectionRow[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function loadReport() {
-      if (!projectId) return;
+    async function loadSharedReport() {
+      if (!token) return;
 
       const { data: projectData, error: projectError } = await supabase
         .from("projects")
         .select("*")
-        .eq("id", projectId)
+        .eq("share_token", token)
+        .eq("is_shared", true)
         .single();
 
-      if (projectError) {
+      if (projectError || !projectData) {
         console.error(projectError);
+        setLoading(false);
         return;
       }
 
+      console.log("shared project data:", projectData); 
+
       setProject(projectData as Project);
 
-      const rows = await loadAllSections(projectId);
+      const rows = await loadAllSections(projectData.id);
+      
+      console.log("shared sections:", rows);
+
       setSections((rows || []) as SectionRow[]);
+      setLoading(false);
     }
 
-    loadReport();
-  }, [projectId, supabase]);
+    loadSharedReport();
+  }, [token, supabase]);
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-white px-6 py-10">
+        <div className="mx-auto max-w-4xl text-slate-500">Loading report...</div>
+      </main>
+    );
+  }
+
+  if (!project) {
+    return (
+      <main className="min-h-screen bg-white px-6 py-10">
+        <div className="mx-auto max-w-4xl">
+          <h1 className="text-2xl font-bold text-slate-900">Report not available</h1>
+          <p className="mt-2 text-slate-600">
+            This report link is invalid or sharing has been turned off.
+          </p>
+        </div>
+      </main>
+    );
+  }
 
   return (
-    <main
-      className="min-h-screen bg-white px-6 py-10 text-slate-900 print:px-8 print:py-8"
-      style={{
-        fontFamily: "Times New Roman, serif",
-        fontSize: "10pt",
-      }}
-    >
-          {/* Print Header */}
-    <div className="hidden print:flex fixed top-0 left-0 right-0 px-8 pt-2 pb-3 text-[10pt] border-b border-slate-300 justify-between bg-white">
-      <span>
-        {project?.address || "Inspection Address"}
-      </span>
-      <span className="page-number"></span>
-    </div>
-      <div className="mx-auto max-w-4xl print:pt-16 print:pb-14">
-        <div className="mb-8 flex items-center justify-between print:hidden">
-          <h1 className="text-2xl font-bold">Inspection Report</h1>
-          <button
-            onClick={() => window.print()}
-            className="rounded-xl bg-slate-900 px-4 py-2 text-white"
-          >
-            Export / Print PDF
-          </button>
-        </div>
-
+    <main className="min-h-screen bg-white px-6 py-10 text-slate-900">
+      <div className="mx-auto max-w-4xl">
         <div className="mb-10 border-b border-slate-300 pb-6">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold">Inspection Report</h1>
-              <p className="text-sm text-slate-600">
-                Residential Exterior Inspection
-              </p>
+              <p className="text-sm text-slate-600">Shared Report View</p>
             </div>
 
             <div className="text-right text-xs text-slate-500">
@@ -164,17 +165,24 @@ export default function ProjectReportPage() {
 
           <div className="mt-6 space-y-1 text-sm text-slate-700">
             <p>
-              <span className="font-semibold">Project:</span> {project?.name}
+              <span className="font-semibold">Project:</span>{" "}
+              {project.name || "Inspection Project"}
             </p>
             <p>
-              <span className="font-semibold">Client:</span> {project?.client}
+              <span className="font-semibold">Project ID:</span>{" "}
+              #{project.id.slice(0, 8)}
             </p>
             <p>
-              <span className="font-semibold">Address:</span> {project?.address}
+              <span className="font-semibold">Client:</span>{" "}
+              {project.client || "N/A"}
+            </p>
+            <p>
+              <span className="font-semibold">Address:</span>{" "}
+              {project.address || "N/A"}
             </p>
             <p>
               <span className="font-semibold">Inspection Date:</span>{" "}
-              {project?.inspection_date}
+              {project.inspection_date || "N/A"}
             </p>
           </div>
         </div>
@@ -186,58 +194,15 @@ export default function ProjectReportPage() {
             return (
               <section
                 key={section.id}
-                className="mb-6 break-inside-avoid pb-4"
-                >
-              <h2 className="text-base font-bold uppercase tracking-wide">
-                {section.section_name}
-              </h2>
-
-              <div className="mt-2 space-y-1 text-[10pt] leading-5">
-              <p>
-                <span className="font-bold">Material:</span>{" "}
-                {renderCheckboxItem(
-                  "Concrete",
-                  section.data.materials?.includes("Concrete") ?? false
-                )}
-                {renderCheckboxItem(
-                  "Brick",
-                  section.data.materials?.includes("Brick") ?? false
-                )}
-                {renderCheckboxItem(
-                  "Pavers",
-                  section.data.materials?.includes("Pavers") ?? false
-                )}
-                {renderCheckboxItem(
-                  "Stone",
-                  section.data.materials?.includes("Stone") ?? false
-                )}
-                {renderCheckboxItem(
-                  "Asphalt",
-                  section.data.materials?.includes("Asphalt") ?? false
-                )}
-              </p>
-
-              <p>
-                <span className="font-bold">Condition:</span>{" "}
-                {renderCheckboxItem("Good", section.data.condition === "Good")}
-                {renderCheckboxItem("Marginal", section.data.condition === "Marginal")}
-                {renderCheckboxItem("Poor", section.data.condition === "Poor")}
-              </p>
-
-              <p>
-                <span className="font-bold">Issue Type:</span>{" "}
-                {renderCheckboxItem("Repair", section.data.issueFlags?.repair ?? false)}
-                {renderCheckboxItem("Improve", section.data.issueFlags?.improve ?? false)}
-                {renderCheckboxItem("Monitor", section.data.issueFlags?.monitor ?? false)}
-                {renderCheckboxItem("Safety", section.data.issueFlags?.safety ?? false)}
-              </p>
-            </div>
+                className="mb-10 break-inside-avoid border-b border-slate-200 pb-8"
+              >
+                <h2 className="text-2xl font-semibold">{section.section_name}</h2>
 
                 {comments.length > 0 ? (
                   <ul className="mt-4 space-y-2">
                     {comments.map((comment, index) => (
-                      <li key={index} className="leading-6">
-                        • {comment}
+                      <li key={index} className="text-sm leading-6 text-slate-800">
+                        {comment}
                       </li>
                     ))}
                   </ul>
@@ -247,18 +212,13 @@ export default function ProjectReportPage() {
                   </p>
                 )}
 
-                {section.data.notes?.trim() && (
-                  <p className="mt-3 italic leading-6">
-                    {section.data.notes.trim()}
-                  </p>
-                )}
-
                 {section.data.photos?.length > 0 ? (
                   <div className="mt-6 grid grid-cols-2 gap-4">
                     {section.data.photos.map((photo, index) => (
                       <div key={index}>
                         <img
                           src={photo.url}
+                          alt={`Section photo ${index + 1}`}
                           className="h-44 w-full rounded-lg border border-slate-300 object-cover"
                         />
                         <p className="mt-2 text-xs text-slate-500">
@@ -273,15 +233,6 @@ export default function ProjectReportPage() {
           })}
         </div>
       </div>
-    {/* Print Footer */}
-    <div className="hidden print:block fixed bottom-0 left-0 right-0 px-8 pt-2 pb-2 text-[9pt] border-t border-slate-300 text-center bg-white">
-      <p>
-        This confidential report is prepared exclusively for {project?.client || "the client"}.
-      </p>
-      <p>
-        © {new Date().getFullYear()} DG Home Inspection Services
-      </p>
-    </div>
     </main>
   );
 }

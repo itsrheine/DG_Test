@@ -79,12 +79,6 @@ export async function saveSectionData(
 export async function loadAllSections(projectId: string) {
   const supabase = createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) throw new Error("Not authenticated");
-
   const { data, error } = await supabase
     .from("inspection_sections")
     .select("*")

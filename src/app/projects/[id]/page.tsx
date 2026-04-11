@@ -23,6 +23,8 @@ type Project = {
   inspection_date: string;
   created_at: string;
   status: "draft" | "completed" | "archived";
+  is_shared?: boolean;
+  share_token?: string | null;
 };
 
 type Photo = {
@@ -450,6 +452,76 @@ async function handleCopyProjectId() {
   }, 1200);
 }
 
+function generateShareToken() {
+  return crypto.randomUUID().replace(/-/g, "");
+}
+
+async function handleEnableShare() {
+  if (!projectId) return;
+
+  const token = generateShareToken();
+
+  const { error } = await supabase
+    .from("projects")
+    .update({
+      is_shared: true,
+      share_token: token,
+    })
+    .eq("id", projectId);
+
+  if (error) {
+    console.error(error);
+    alert("Failed to enable sharing");
+    return;
+  }
+
+  setProject((prev) =>
+    prev
+      ? {
+          ...prev,
+          is_shared: true,
+          share_token: token,
+        }
+      : prev
+  );
+}
+
+async function handleDisableShare() {
+  if (!projectId) return;
+
+  const { error } = await supabase
+    .from("projects")
+    .update({
+      is_shared: false,
+      share_token: null,
+    })
+    .eq("id", projectId);
+
+  if (error) {
+    console.error(error);
+    alert("Failed to disable sharing");
+    return;
+  }
+
+  setProject((prev) =>
+    prev
+      ? {
+          ...prev,
+          is_shared: false,
+          share_token: null,
+        }
+      : prev
+  );
+}
+
+async function handleCopyShareLink() {
+  if (!project?.share_token) return;
+
+  const shareUrl = `${window.location.origin}/shared/${project.share_token}`;
+  await navigator.clipboard.writeText(shareUrl);
+  alert("Share link copied");
+}
+
 async function refreshFullReport() {
   if (!projectId) return;
 
@@ -618,6 +690,35 @@ async function removePhoto(indexToRemove: number) {
                   {projectProgress.percent}% complete
                   {projectProgress.readyToComplete ? " • Ready to mark completed" : ""}
                 </p>
+              </div>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {project?.is_shared && project?.share_token ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={handleCopyShareLink}
+                      className="rounded-lg border border-slate-300 px-3 py-2 text-xs text-slate-700"
+                    >
+                      Copy Share Link
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleDisableShare}
+                      className="rounded-lg border border-red-300 px-3 py-2 text-xs text-red-600"
+                    >
+                      Stop Sharing
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleEnableShare}
+                    className="rounded-lg border border-slate-300 px-3 py-2 text-xs text-slate-700"
+                  >
+                    Share Report
+                  </button>
+                )}
               </div>
               </div>
             </div>
