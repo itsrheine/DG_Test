@@ -39,3 +39,29 @@ body {
     content: "Page " counter(page);
   }
 }
+
+@media print {
+  body {
+    background: white !important;
+  }
+
+  main {
+    padding: 0 !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .page-break {
+    page-break-before: always;
+  }
+
+  img {
+    page-break-inside: avoid;
+  }
+
+  section {
+    page-break-inside: avoid;
+  }
+}

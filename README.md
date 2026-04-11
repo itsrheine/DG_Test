@@ -9,11 +9,14 @@ Practice home inspection app using Next.js + Supabase
 - Next.js (App Router)
 - TypeScript
 - Tailwind CSS
+- Lucide Icons
 
 ### Backend & Database
 - Supabase (PostgreSQL)
 - Supabase Auth
-- Supabase Storage (photo uploads)
+- Supabase Storage
+  - Inspection photos
+  - Company logo storage
 
 ### State & UI
 - React Hooks
@@ -51,20 +54,51 @@ Practice home inspection app using Next.js + Supabase
 
 ---
 
+### Company Branding
+- Upload company logo (Supabase Storage)
+- Logo displayed in:
+  - Report preview
+  - PDF export
+- Company information:
+  - Name
+  - Address
+  - Phone
+  - Email
+
+---
+
 ### Auto Report Generator
 - Real-time report preview
 - Combines all saved sections into a structured report
 - Auto-generated inspection comments
-- Styled output (categories, notes, formatting)
+- Styled output:
+  - Materials
+  - Condition
+  - Issue types
+  - Notes
+- Photo grid with captions
 
 ---
 
-### PDF Export
-- Export full inspection report to PDF
-- Custom print layout
+### PDF Export (Print-Based)
+- Clean print layout optimized for inspectors
 - Header + footer system
-- Section formatting (bold, italic notes)
-- (In progress) Branding + logo support
+- Company branding included (logo + info)
+- Page header (address + page number)
+- Smart layout behavior:
+  - On screen: user-friendly layout
+  - On print: professional report layout
+- Print-only + screen-only UI control using Tailwind (`print:` utilities)
+
+---
+
+### Report UI Enhancements
+- Inline action icons (Print / Download)
+- Removed floating buttons → integrated into header
+- Metadata restructuring:
+  - “Generated on” shown under Inspection Date (screen)
+  - Automatically moves to header in print/PDF
+- Improved spacing and typography for readability
 
 ---
 
@@ -84,14 +118,14 @@ Practice home inspection app using Next.js + Supabase
 
 ---
 
-### Settings
-- Settings UI (mobile app style)
+### Settings (Upgraded)
+- Mobile-style settings UI
+- Structured sections:
+  - Account (Inspector info)
+  - Company (Branding + logo)
+  - Report (Header & Footer)
 - Theme toggle (Light / Dark mode)
 - Logout functionality
-- Foundation for:
-  - Company branding
-  - Report customization
-  - User profile
 
 ---
 
@@ -107,7 +141,7 @@ Practice home inspection app using Next.js + Supabase
 
 - Project + report data stored in Supabase
 - Section data saved per project
-- Photos stored in Supabase Storage
+- Photos + logos stored in Supabase Storage
 - Reports dynamically generated from saved data
 - Share links fetch public project data securely
 
@@ -125,6 +159,7 @@ Projects can be:
 - App-style navigation
 - Clean, minimal interface
 - Built for future mobile app conversion
+- Print-friendly report formatting
 
 ---
 
@@ -138,9 +173,10 @@ Projects can be:
 ---
 
 ### Reporting
+- True PDF generation (not print-based)
 - Export to Word format
 - Custom report templates
-- Dynamic company branding (logo, header, footer)
+- Advanced branding customization
 - Client portal for report access
 
 ---
@@ -180,9 +216,8 @@ Projects can be:
 
 ### Settings & User Control
 - Profile management
-- Company information
-- Logo upload
-- Report customization
+- Company branding enhancements
+- Advanced report customization
 - Notification preferences
 
 ---
