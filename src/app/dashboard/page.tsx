@@ -127,31 +127,31 @@ const visibleProjects = projects.filter((project) =>
 );
 
   return (
-    <main className="min-h-screen bg-slate-50 pb-20">
+    <main className="min-h-screen bg-slate-50 pb-20 text-slate-900 dark:bg-black dark:text-white">
       <div className="mx-auto max-w-6xl px-6 py-12">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900">Dashboard</h1>
-            <p className="mt-2 text-slate-600">
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Dashboard</h1>
+            <p className="mt-2 text-slate-600 dark:text-zinc-400">
               Manage your home inspection projects.
             </p>
           </div>
 
           <Link
             href="/projects/new"
-            className="rounded-xl bg-slate-900 px-5 py-3 text-white"
+            className="rounded-xl bg-slate-900 px-5 py-3 text-white transition hover:opacity-90 dark:bg-white dark:text-black"
           >
             New Project
           </Link>
         </div>
-<div className="mt-6 inline-flex rounded-xl border border-slate-200 bg-white p-1">
+<div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm transition hover:shadow-md dark:border-white/10 dark:bg-zinc-900 dark:hover:bg-zinc-800/80">
   <button
     type="button"
     onClick={() => setView("current")}
     className={`rounded-lg px-4 py-2 text-sm ${
       view === "current"
-        ? "bg-slate-900 text-white"
-        : "text-slate-700"
+        ? "bg-slate-900 text-white dark:bg-white dark:text-black"
+        : "text-slate-700 hover:bg-slate-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
     }`}
   >
     Active
@@ -162,8 +162,8 @@ const visibleProjects = projects.filter((project) =>
     onClick={() => setView("archived")}
     className={`rounded-lg px-4 py-2 text-sm ${
       view === "archived"
-        ? "bg-slate-900 text-white"
-        : "text-slate-700"
+        ? "bg-slate-900 text-white dark:bg-white dark:text-black"
+        : "text-slate-700 hover:bg-slate-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
     }`}
   >
     Archived
@@ -171,7 +171,7 @@ const visibleProjects = projects.filter((project) =>
 </div>
         <div className="mt-8 grid gap-4">
           {visibleProjects.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-slate-500">
+            <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-slate-500 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-400">
                 {view === "current"
                     ? "No active projects yet. Create your first project."
                     : "No archived projects yet."}
@@ -180,38 +180,38 @@ const visibleProjects = projects.filter((project) =>
             visibleProjects.map((project) => (
               <div
                 key={project.id}
-                className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm"
+                className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm transition hover:shadow-md dark:border-white/10 dark:bg-zinc-900 dark:hover:bg-zinc-800/80"
               >
                 <Link href={`/projects/${project.id}`} className="block">
                   <div className="flex items-start justify-between">
                     <div>
                       <div className="space-y-0.5">
-                        <h2 className="text-xl font-semibold text-slate-900 leading-tight">
+                        <h2 className="text-xl font-semibold leading-tight text-slate-900 dark:text-white">
                           {project.name}
                         </h2>
 
-                        <p className="text-[11px] text-slate-500 font-mono">
+                        <p className="font-mono text-[11px] text-slate-500 dark:text-zinc-500">
                           #{project.id.slice(0, 8)}
                         </p>
                       </div>
-                      <p className="mt-1 text-sm text-slate-600 leading-tight">
+                      <p className="mt-1 text-sm leading-tight text-slate-600 dark:text-zinc-400">
                         Client: {project.client}
                       </p>
-                      <p className="mt-1 text-sm text-slate-600 leading-tight">
+                      <p className="mt-1 text-sm leading-tight text-slate-600 dark:text-zinc-400">
                         Address: {project.address}
                       </p>
-                      <p className="mt-1 text-sm text-slate-600 leading-tight">
+                      <p className="mt-1 text-sm leading-tight text-slate-600 dark:text-zinc-400">
                         Inspection Date: {project.inspection_date || "Not set"}
                       </p>
-                      <p className="mt-2 text-xs text-slate-500">
+                      <p className="mt-2 text-xs text-slate-500 dark:text-zinc-500">
                         {projectProgress[project.id]
                           ? `${projectProgress[project.id].completed} / ${projectProgress[project.id].total} sections complete`
                           : "0 / 4 sections complete"}
                       </p>
 
-                      <div className="mt-2 h-2 w-full rounded-full bg-slate-100">
+                      <div className="mt-2 h-2 w-full rounded-full bg-slate-100 dark:bg-zinc-800">
                         <div
-                          className="h-2 rounded-full bg-slate-900"
+                          className="h-2 rounded-full bg-slate-900 dark:bg-white"
                           style={{
                             width: `${
                               projectProgress[project.id]
@@ -226,8 +226,8 @@ const visibleProjects = projects.filter((project) =>
                       <span
                         className={`rounded-full px-2 py-0.5 text-xs ${
                           project.status === "completed"
-                            ? "bg-green-100 text-green-700"
-                            : "bg-slate-100 text-slate-600"
+                            ? "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300"
+                            : "bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-300"
                         }`}
                       >
                         {project.status === "completed" ? "Completed" : "Draft"}
@@ -240,7 +240,7 @@ const visibleProjects = projects.filter((project) =>
                     <button
                     type="button"
                     onClick={() => handleArchive(project.id)}
-                    className="rounded-xl border border-slate-300 px-4 py-2 text-sm text-slate-700"
+                    className="rounded-xl border border-slate-300 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-100 dark:border-white/10 dark:text-zinc-300 dark:hover:bg-zinc-800"
                     >
                     Archive
                     </button>
@@ -264,7 +264,7 @@ const visibleProjects = projects.filter((project) =>
                         )
                       );
                     }}
-                    className="rounded-xl border border-slate-300 px-4 py-2 text-sm text-slate-700"
+                    className="rounded-xl border border-slate-300 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-100 dark:border-white/10 dark:text-zinc-300 dark:hover:bg-zinc-800"
                     >
                     Restore
                     </button>
@@ -273,7 +273,7 @@ const visibleProjects = projects.filter((project) =>
                 <button
                     type="button"
                     onClick={() => handleDelete(project.id)}
-                    className="rounded-xl border border-red-300 px-4 py-2 text-sm text-red-600"
+                    className="rounded-xl border border-red-300 px-4 py-2 text-sm text-red-600 transition hover:bg-red-50 dark:border-red-500/40 dark:text-red-400 dark:hover:bg-red-900/20"
                 >
                     Delete
                 </button>

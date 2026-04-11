@@ -36,6 +36,14 @@ export function ThemeProvider({
     localStorage.setItem("theme", theme);
   }, [theme]);
 
+  useEffect(() => {
+  if (theme === "dark") {
+    document.documentElement.classList.add("dark");
+  } else {
+    document.documentElement.classList.remove("dark");
+  }
+}, [theme]);
+
   function setTheme(nextTheme: Theme) {
     setThemeState(nextTheme);
   }
@@ -59,7 +67,7 @@ export function ThemeProvider({
 export function useTheme() {
   const context = useContext(ThemeContext);
 
-  if (!context) {
+    if (!context) {
     throw new Error("useTheme must be used within a ThemeProvider");
   }
 
