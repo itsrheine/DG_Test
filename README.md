@@ -44,6 +44,7 @@ Practice home inspection app using Next.js
 - Add inspector notes
 - Save section data per project + section
 - Persistent project state (Draft / Completed)
+- Section progress tracking (completion status + percentage)
 
 ### Photo Upload
 - Upload multiple photos per section
@@ -51,12 +52,27 @@ Practice home inspection app using Next.js
 - Public URLs used for fast loading and display
 - Add captions to each photo
 - Remove photos (also deletes from storage)
+- Drag-and-drop of reordering of photos
+- Auto-save on upload, delete, and reorder
 - Optimized for performance (no base64 storage)
 
 ### Auto Report Generator
 - Real-time report preview
 - Combines all saved sections into a structured report
 - Automatically generates inspection comments based on selections
+- Includes uploaded photos per section
+- Reflects saved data instantly across the app
+
+### Report Export
+- Dedicated report page per project
+- Print-friendly layout for clean PDF generation
+- Export full inspection report via browser print
+- Includes:
+    - Project details
+    - Section summaries
+    - Inspector notes
+    - Uploaded photos with captions
+-Preserves photo order in exported reports
 
 ### Navigation & App Layout
 - Mobile-style bottom navigation (Home, Projects, Notes, Settings)
@@ -94,7 +110,7 @@ Practice home inspection app using Next.js
 ## File Handling
 - Image uploads handled via Supabase Storage API
 - Unique file paths generated per project
-- Secure and scalabile file management
+- Secure and scalable file management
 - Supports future features like:
     - PDF report embedding
     - Client image access
@@ -133,7 +149,7 @@ Practice home inspection app using Next.js
 - Downloadable receipts and billing records
 
 ### Reporting
-- Export report to Word/PDF
+- Enhanced PDF export (branding, cover page, pagination)
 - Customizable report templates
 - Shareable report links (PDF/Password Protected) (Ask D if ok)
 - Client portal to view completed inspection reports (Ask D if ok)

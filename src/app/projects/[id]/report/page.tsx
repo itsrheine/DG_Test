@@ -126,15 +126,49 @@ export default function ProjectReportPage() {
           </button>
         </div>
 
-        <div className="mb-8 border-b border-slate-200 pb-6">
-          <h1 className="text-3xl font-bold">{project?.name || "Inspection Report"}</h1>
-          <p className="mt-3 text-sm text-slate-600">
-            Project #{project?.id.slice(0, 8)}
-          </p>
-          <div className="mt-4 space-y-1 text-sm text-slate-700">
-            <p>Client: {project?.client || "No client yet"}</p>
-            <p>Address: {project?.address || "No address yet"}</p>
-            <p>Inspection Date: {project?.inspection_date || "No inspection date yet"}</p>
+<div className="mb-10 border-b border-slate-300 pb-6">
+  <div className="flex items-center justify-between">
+    <div className="flex items-center gap-3">
+      <img
+        src="/logo.png"
+        alt="Company Logo"
+        className="h-10 w-auto object-contain"
+      />
+      <div>
+        <h1 className="text-2xl font-bold">Better Home Inspections Inc.</h1>
+        <p className="text-xs text-slate-500">
+          2 Harold Ave. San Francisco, CA 94112 | (510) 432-9898
+        </p>
+      </div>
+    </div>
+
+    <div className="text-right text-xs text-slate-500">
+      <p>Date Generated</p>
+      <p>{new Date().toLocaleDateString()}</p>
+    </div>
+  </div>
+
+          <div className="mt-6 space-y-1 text-sm text-slate-700">
+            <p>
+              <span className="font-semibold">Project:</span>{" "}
+              {project?.name || "Inspection Project"}
+            </p>
+            <p>
+              <span className="font-semibold">Project ID:</span>{" "}
+              #{project?.id.slice(0, 8)}
+            </p>
+            <p>
+              <span className="font-semibold">Client:</span>{" "}
+              {project?.client || "N/A"}
+            </p>
+            <p>
+              <span className="font-semibold">Address:</span>{" "}
+              {project?.address || "N/A"}
+            </p>
+            <p>
+              <span className="font-semibold">Inspection Date:</span>{" "}
+              {project?.inspection_date || "N/A"}
+            </p>
           </div>
         </div>
 
@@ -143,15 +177,18 @@ export default function ProjectReportPage() {
             const comments = buildComments(section.section_name, section.data);
 
             return (
-              <section key={section.id} className="border-b border-slate-200 pb-8">
+              <section
+                key={section.id}
+                className="mb-10 break-inside-avoid border-b border-slate-200 pb-8"
+                >
                 <h2 className="text-2xl font-semibold">{section.section_name}</h2>
 
                 {comments.length > 0 ? (
                   <ul className="mt-4 space-y-2">
                     {comments.map((comment, index) => (
-                      <li key={index} className="text-sm leading-6 text-slate-800">
-                        • {comment}
-                      </li>
+                  <li className="text-sm leading-6 text-slate-800">
+                    {comment}
+                  </li>
                     ))}
                   </ul>
                 ) : (
@@ -159,13 +196,13 @@ export default function ProjectReportPage() {
                 )}
 
                 {section.data.photos?.length > 0 ? (
-                  <div className="mt-6 grid grid-cols-2 gap-4">
+                  <div className="mt-6 grid grid-cols-2 gap-4 print:grid-cols-2">
                     {section.data.photos.map((photo, index) => (
                       <div key={index} className="break-inside-avoid">
                         <img
                           src={photo.url}
                           alt={`Section photo ${index + 1}`}
-                          className="h-48 w-full rounded-lg border border-slate-200 object-cover"
+                          className="h-44 w-full rounded-lg border border-slate-300 object-cover"
                         />
                         <p className="mt-2 text-xs text-slate-500">
                           {photo.caption || `Photo ${index + 1}`}
@@ -178,6 +215,10 @@ export default function ProjectReportPage() {
             );
           })}
         </div>
+      </div>
+      <div className="mt-12 border-t border-slate-200 pt-6 text-center text-xs text-slate-500">
+        <p>This report is based on a visual inspection at the time of service.</p>
+        <p>© {new Date().getFullYear()} Your Company Name</p>
       </div>
     </main>
   );

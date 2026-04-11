@@ -78,8 +78,8 @@ export default function ProjectDetailPage() {
 
   const [loaded, setLoaded] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
-
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [hasInitializedAutosave, setHasInitializedAutosave] = useState(false);
   const [removingPhotoIndex, setRemovingPhotoIndex] = useState<number | null>(null);
   const [draggedPhotoIndex, setDraggedPhotoIndex] = useState<number | null>(null);
 
@@ -111,6 +111,8 @@ useEffect(() => {
   async function fetchSection() {
     if (!projectId) return;
 
+    setHasInitializedAutosave(false);
+
     try {
       const data = await loadSectionData(projectId, sectionName);
 
@@ -141,6 +143,7 @@ useEffect(() => {
       }
 
       setLoaded(true);
+      setHasInitializedAutosave(true);
     } catch (error) {
       console.error(error);
     }
@@ -154,10 +157,34 @@ useEffect(() => {
   refreshProjectProgress();
 }, [projectId, sectionName]);
 
-async function handleSave() {
+useEffect(() => {
+  if (!projectId) return;
+  if (!loaded) return;
+  if (!hasInitializedAutosave) return;
+
+  const timeout = setTimeout(() => {
+    saveCurrentSection(false);
+  }, 800);
+
+  return () => clearTimeout(timeout);
+}, [
+  projectId,
+  sectionName,
+  materials,
+  condition,
+  issueFlags,
+  notes,
+  photos,
+  loaded,
+  hasInitializedAutosave,
+]);
+
+async function saveCurrentSection(showFeedback = true) {
   if (!projectId) return;
 
-  setIsSaving(true);
+  if (showFeedback) {
+    setIsSaving(true);
+  }
 
   try {
     await saveSectionData(projectId, "Grounds", sectionName, {
@@ -168,19 +195,25 @@ async function handleSave() {
       photos,
     });
 
-    setSaveMessage("Saved");
     await refreshFullReport();
     await refreshProjectProgress();
-  } catch (error: any) {
-  console.error("SAVE SECTION ERROR:", error);
-  alert(error?.message || JSON.stringify(error));
-  setSaveMessage("Error");
-}
 
-  setTimeout(() => {
-    setIsSaving(false);
-    setSaveMessage("");
-  }, 1500);
+    if (showFeedback) {
+      setSaveMessage("Saved");
+    }
+  } catch (error: any) {
+    console.error("SAVE SECTION ERROR:", error);
+    if (showFeedback) {
+      setSaveMessage("Error");
+    }
+  } finally {
+    if (showFeedback) {
+      setTimeout(() => {
+        setIsSaving(false);
+        setSaveMessage("");
+      }, 1200);
+    }
+  }
 }
 
 async function handleToggleCompleted() {
@@ -327,17 +360,6 @@ async function handlePhotoUpload(event: React.ChangeEvent<HTMLInputElement>) {
     }
 
     setPhotos(updatedPhotos);
-
-    await saveSectionData(projectId, "Grounds", sectionName, {
-      materials,
-      condition,
-      issueFlags,
-      notes,
-      photos: updatedPhotos,
-    });
-
-    await refreshFullReport();
-    await refreshProjectProgress();
   } catch (error) {
     console.error(error);
     alert("Photo upload failed");
@@ -347,40 +369,7 @@ async function handlePhotoUpload(event: React.ChangeEvent<HTMLInputElement>) {
   }
 }
 
-async function removePhoto(indexToRemove: number) {
-  try {
-    setRemovingPhotoIndex(indexToRemove);
-
-    const photoToRemove = photos[indexToRemove];
-
-    if (photoToRemove?.path) {
-      await deleteProjectPhoto(photoToRemove.path);
-    }
-
-    const updatedPhotos = photos.filter((_, index) => index !== indexToRemove);
-    setPhotos(updatedPhotos);
-
-    if (projectId) {
-      await saveSectionData(projectId, "Grounds", sectionName, {
-        materials,
-        condition,
-        issueFlags,
-        notes,
-        photos: updatedPhotos,
-      });
-
-      await refreshFullReport();
-      await refreshProjectProgress();
-    }
-  } catch (error) {
-    console.error(error);
-    alert("Failed to remove photo");
-  } finally {
-    setRemovingPhotoIndex(null);
-  }
-}
-
-async function movePhoto(fromIndex: number, toIndex: number) {
+function movePhoto(fromIndex: number, toIndex: number) {
   if (fromIndex === toIndex) return;
 
   const updatedPhotos = [...photos];
@@ -388,18 +377,6 @@ async function movePhoto(fromIndex: number, toIndex: number) {
   updatedPhotos.splice(toIndex, 0, movedPhoto);
 
   setPhotos(updatedPhotos);
-
-  if (projectId) {
-    await saveSectionData(projectId, "Grounds", sectionName, {
-      materials,
-      condition,
-      issueFlags,
-      notes,
-      photos: updatedPhotos,
-    });
-
-    await refreshFullReport();
-  }
 }
 
 function buildComments(section: string, data: SavedSectionData) {
@@ -541,6 +518,32 @@ async function refreshProjectProgress() {
   }
 }
 
+async function removePhoto(indexToRemove: number) {
+  try {
+    setRemovingPhotoIndex(indexToRemove);
+
+    const photoToRemove = photos[indexToRemove];
+    const updatedPhotos = photos.filter((_, index) => index !== indexToRemove);
+
+    // Remove from UI first
+    setPhotos(updatedPhotos);
+
+    // Try deleting from storage too, but don't block UI removal
+    if (photoToRemove?.path) {
+      try {
+        await deleteProjectPhoto(photoToRemove.path);
+      } catch (storageError) {
+        console.error("Storage delete failed:", storageError);
+      }
+    }
+  } catch (error) {
+    console.error(error);
+    alert("Failed to remove photo");
+  } finally {
+    setRemovingPhotoIndex(null);
+  }
+}
+
   return (
     <main className="min-h-screen bg-slate-50 pb-20">
           <div className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur">
@@ -559,23 +562,20 @@ async function refreshProjectProgress() {
         </p>
         <p className="text-xs text-slate-500">Project Details</p>
       </div>
-    <div className="flex items-center gap-2">
-      <a
-        href={`/projects/${projectId}/report`}
-        target="_blank"
-        rel="noreferrer"
-        className="rounded-full border border-slate-300 px-4 py-2 text-sm text-slate-700"
-      >
-        Export PDF
-      </a>
+      <div className="flex items-center gap-3">
+        <a
+          href={`/projects/${projectId}/report`}
+          target="_blank"
+          rel="noreferrer"
+          className="rounded-full border border-slate-300 px-4 py-2 text-sm text-slate-700"
+        >
+          Export PDF
+        </a>
 
-      <button
-        onClick={handleSave}
-        className="rounded-full bg-slate-900 px-4 py-2 text-sm text-white"
-      >
-        {isSaving ? "Saving..." : saveMessage ? "Saved ✓" : "Save"}
-      </button>
-    </div>
+        <div className="text-sm text-slate-500">
+          {isSaving ? "Saving..." : "All changes saved"}
+        </div>
+      </div>
     </div>
   </div>
       <div className="mx-auto max-w-7xl px-6 py-10">
@@ -824,7 +824,10 @@ async function refreshProjectProgress() {
 />
         <button
           type="button"
-          onClick={() => removePhoto(index)}
+          onClick={(e) => {
+            e.stopPropagation();
+            removePhoto(index);
+          }}
           disabled={removingPhotoIndex === index}
           className={`mt-2 w-full rounded-xl border px-3 py-2 text-sm ${
             removingPhotoIndex === index
@@ -843,22 +846,20 @@ async function refreshProjectProgress() {
     </p>
   )}
 </div>
-            <div className="mt-6 flex items-center gap-3">
-            <button
-                type="button"
-                onClick={handleSave}
-                className="rounded-xl bg-slate-900 px-5 py-3 text-white"
-            >
-                Save Section
-            </button>
+<div className="mt-6 flex items-center gap-3">
+  <button
+    type="button"
+    onClick={() => saveCurrentSection(true)}
+    className="rounded-xl bg-slate-900 px-5 py-3 text-white"
+  >
+    Save Section
+  </button>
 
-            {saveMessage ? (
-                <span className="text-sm text-green-600">{saveMessage}</span>
-            ) : null}
-            </div>
-
-          </section>
-
+  <span className="text-sm text-slate-500">
+    {isSaving ? "Saving..." : "Autosave is on"}
+  </span>
+</div>
+</section>
           <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <h2 className="text-2xl font-semibold text-slate-900">
               Live Report Preview
