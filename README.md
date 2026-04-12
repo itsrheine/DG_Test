@@ -9,14 +9,14 @@ Practice home inspection app using Next.js + Supabase
 - Next.js (App Router)
 - TypeScript
 - Tailwind CSS
-- Lucide Icons
+- Lucide React Icons
 
 ### Backend & Database
 - Supabase (PostgreSQL)
 - Supabase Auth
 - Supabase Storage
   - Inspection photos
-  - Company logo storage
+  - Company logos
 
 ### State & UI
 - React Hooks
@@ -26,6 +26,12 @@ Practice home inspection app using Next.js + Supabase
 
 ## Features
 
+### UX Direction
+- Designed to feel like iOS
+- Code-heavy on speed, simplicity, and minimal UI
+- Tap-first interactions instead of buttons
+- Clean editing for notes
+
 ### Dashboard
 - Create and manage inspection projects
 - View project details (client, address, inspection date)
@@ -33,6 +39,7 @@ Practice home inspection app using Next.js + Supabase
 - Toggle between Active and Archived projects
 - Status tracking (Draft / Completed)
 - Compact mobile-friendly project cards
+- Short project ID display for quick reference
 
 ---
 
@@ -42,6 +49,7 @@ Practice home inspection app using Next.js + Supabase
 - Add inspector notes
 - Auto-save section data
 - Persistent project state
+- Progress tracking across inspection sections
 
 ---
 
@@ -98,7 +106,8 @@ Practice home inspection app using Next.js + Supabase
 - Metadata restructuring:
   - “Generated on” shown under Inspection Date (screen)
   - Automatically moves to header in print/PDF
-- Improved spacing and typography for readability
+- Improved spacing, alignment and typography for readability
+- Cleaner export + print experience
 
 ---
 
@@ -110,11 +119,25 @@ Practice home inspection app using Next.js + Supabase
 
 ---
 
+### Notes
+
+- Project-linked notes system
+- Notes displayed in iOS-mobile UX
+- Tap a note to open full-screen editor
+- Auto-save while typing
+- Project selector inside note editor (iOS)
+- Simplified UI:
+  - Removed edit/delete buttons
+  - Focus on tap-to-edit workflow
+---
+
 ### Navigation & App Layout
 - Mobile-style bottom navigation
 - Sticky app header with back navigation
+- Inline action icons (no floating buttons)
 - Reusable layout components
 - Optimized for phone experience
+- iOs interaction patterns
 
 ---
 
@@ -134,6 +157,7 @@ Practice home inspection app using Next.js + Supabase
 - Instant UI updates across app
 - Stored in localStorage
 - Shared via React context
+- Applied across dashboard, notes, reports, and settings
 
 ---
 
@@ -163,37 +187,39 @@ Projects can be:
 
 ---
 
-## In Progress (Upcoming Features)
+## In Progress (Roadmap)
 
-### Data & Sync
-- Move all section data fully to Supabase
-- Real-time syncing across devices
-- Offline mode support
+### Phase 1 - Core Experience (Current Focus)
+- Finalize inspection workflow
+- Improve report generation (PDF polish)
+- Notes system enhancements
+- In-app notifications
+- Performance + UI polish
 
 ---
 
-### Reporting
+### Phase 2 - Professional Features
 - True PDF generation (not print-based)
 - Export to Word format
-- Custom report templates
-- Advanced branding customization
-- Client portal for report access
+- Advanced report templates
+- Company branding customization
+- Client portal for report acccess
 
 ---
 
-### Billing & Payments
+### Phase 3 - Business & Monetization
 - Subscription plans (monthly/yearly)
-- A la carte pricing model
-- Payment integration:
+- A la care pricing model
+- Payment integration: 
   - Stripe
   - Square
-  - Apple Pay / PayPal
+  - Apple Pay / Paypal
 - Invoice generation & history
 
 ---
 
-### Inspection Expansion
-- Add full inspection categories:
+### Phase 4 - Inspection Expansion
+- Additional inspection categories:
   - Exterior
   - Roofing
   - Plumbing
@@ -206,27 +232,20 @@ Projects can be:
 
 ---
 
-### App Experience
+### Phase 5 - Advanced Experience
+- Offline mode support
+- Real-time syncing across devicecs
 - Swipe actions (archive/delete)
-- Improved section navigation
 - Faster inspection input flow
-- Dark/light mode polish
+- Improved navigation + transitions
 
 ---
 
-### Settings & User Control
-- Profile management
-- Company branding enhancements
-- Advanced report customization
-- Notification preferences
-
----
-
-### AI Features (Future)
+### Phase 6 - AI Features (Future)
 - Voice-to-text inspection input
 - AI-assisted comment generation
 - Smart inspection suggestions
-- Conversational assistant (hands-free workflow)
+- Converesational assistant (hands-free workflow)
 
 ---
 
