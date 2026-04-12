@@ -42,14 +42,8 @@ export default function NotesPage() {
 
   const [notes, setNotes] = useState<Note[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [selectedProjectId, setSelectedProjectId] = useState("");
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
-
-  const [showComposer, setShowComposer] = useState(false);
+  const [creating, setCreating] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -70,8 +64,8 @@ export default function NotesPage() {
       const projectName = note.project_id ? projectMap[note.project_id] : "";
 
       return (
-        note.title.toLowerCase().includes(q) ||
-        note.content.toLowerCase().includes(q) ||
+        (note.title || "").toLowerCase().includes(q) ||
+        (note.content || "").toLowerCase().includes(q) ||
         (projectName || "").toLowerCase().includes(q) ||
         (note.project_id || "").slice(0, 8).toLowerCase().includes(q)
       );
@@ -111,16 +105,8 @@ export default function NotesPage() {
     loadData();
   }, [router, supabase]);
 
-  async function handleAddNote(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-
-    if (!title.trim() && !content.trim()) return;
-    if (!selectedProjectId) {
-      alert("Please select a project.");
-      return;
-    }
-
-    setSaving(true);
+  async function handleNewNote() {
+    setCreating(true);
 
     const {
       data: { user },
@@ -131,95 +117,27 @@ export default function NotesPage() {
       return;
     }
 
-    if (editingNoteId) {
-      const { data, error } = await supabase
-        .from("notes")
-        .update({
-          title: title.trim() || "Untitled Note",
-          content: content.trim(),
-          project_id: selectedProjectId,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", editingNoteId)
-        .select()
-        .single();
+    const { data, error } = await supabase
+      .from("notes")
+      .insert([
+        {
+          user_id: user.id,
+          project_id: null,
+          title: "",
+          content: "",
+        },
+      ])
+      .select()
+      .single();
 
-      if (error) {
-        console.error(error);
-        setSaving(false);
-        return;
-      }
-
-      setNotes((prev) =>
-        prev.map((note) => (note.id === editingNoteId ? (data as Note) : note))
-      );
-    } else {
-      const { data, error } = await supabase
-        .from("notes")
-        .insert([
-          {
-            user_id: user.id,
-            project_id: selectedProjectId,
-            title: title.trim() || "Untitled Note",
-            content: content.trim(),
-          },
-        ])
-        .select()
-        .single();
-
-      if (error) {
-        console.error(error);
-        setSaving(false);
-        return;
-      }
-
-      setNotes((prev) => [data as Note, ...prev]);
-    }
-
-    setTitle("");
-    setContent("");
-    setSelectedProjectId("");
-    setEditingNoteId(null);
-    setShowComposer(false);
-    setSaving(false);
-  }
-
-  function handleNewNote() {
-    setEditingNoteId(null);
-    setTitle("");
-    setContent("");
-    setSelectedProjectId("");
-    setShowComposer(true);
-  }
-
-  function handleEditNote(note: Note) {
-    setEditingNoteId(note.id);
-    setTitle(note.title);
-    setContent(note.content);
-    setSelectedProjectId(note.project_id || "");
-    setShowComposer(true);
-  }
-
-  function handleCancelEdit() {
-    setEditingNoteId(null);
-    setTitle("");
-    setContent("");
-    setSelectedProjectId("");
-    setShowComposer(false);
-  }
-
-  async function handleDeleteNote(noteId: string) {
-    const confirmDelete = confirm("Delete this note?");
-    if (!confirmDelete) return;
-
-    const { error } = await supabase.from("notes").delete().eq("id", noteId);
+    setCreating(false);
 
     if (error) {
       console.error(error);
       return;
     }
 
-    setNotes((prev) => prev.filter((note) => note.id !== noteId));
+    router.push(`/notes/${data.id}`);
   }
 
   return (
@@ -250,7 +168,11 @@ export default function NotesPage() {
             </button>
 
             <div className="flex-1 px-4">
-              <h1 className={`text-3xl font-semibold ${isDark ? "text-white" : "text-slate-900"}`}>
+              <h1
+                className={`text-3xl font-semibold ${
+                  isDark ? "text-white" : "text-slate-900"
+                }`}
+              >
                 Notes
               </h1>
             </div>
@@ -259,11 +181,12 @@ export default function NotesPage() {
               <button
                 type="button"
                 onClick={handleNewNote}
+                disabled={creating}
                 className={`flex h-14 w-14 items-center justify-center rounded-full shadow-sm ${
                   isDark
                     ? "border border-white/10 bg-zinc-900 text-white"
                     : "border border-slate-200 bg-white text-slate-900"
-                }`}
+                } ${creating ? "opacity-60" : ""}`}
               >
                 <Plus size={24} />
               </button>
@@ -313,123 +236,6 @@ export default function NotesPage() {
       </div>
 
       <div className="mx-auto max-w-4xl px-4 py-6">
-        {showComposer && (
-          <form
-            onSubmit={handleAddNote}
-            className={`mb-6 rounded-[28px] p-4 shadow-xl ${
-              isDark
-                ? "border border-white/10 bg-zinc-900"
-                : "border border-slate-200 bg-white"
-            }`}
-          >
-            <div>
-              <label
-                className={`mb-2 block text-sm font-medium ${
-                  isDark ? "text-zinc-300" : "text-slate-700"
-                }`}
-              >
-                Project
-              </label>
-              <select
-                value={selectedProjectId}
-                onChange={(e) => setSelectedProjectId(e.target.value)}
-                className={`w-full rounded-2xl px-4 py-3 outline-none ${
-                  isDark
-                    ? "border border-white/10 bg-zinc-950 text-white"
-                    : "border border-slate-300 bg-white text-slate-900"
-                }`}
-              >
-                <option value="">Select a project</option>
-                {projects.map((project) => (
-                  <option key={project.id} value={project.id}>
-                    {project.name} / #{project.id.slice(0, 8)}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="mt-4">
-              <label
-                className={`mb-2 block text-sm font-medium ${
-                  isDark ? "text-zinc-300" : "text-slate-700"
-                }`}
-              >
-                Title
-              </label>
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Example: Follow up with client"
-                className={`w-full rounded-2xl px-4 py-3 outline-none ${
-                  isDark
-                    ? "border border-white/10 bg-zinc-950 text-white placeholder:text-zinc-500"
-                    : "border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400"
-                }`}
-              />
-            </div>
-
-            <div className="mt-4">
-              <label
-                className={`mb-2 block text-sm font-medium ${
-                  isDark ? "text-zinc-300" : "text-slate-700"
-                }`}
-              >
-                Note
-              </label>
-              <textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                rows={4}
-                placeholder="Write your note here..."
-                className={`w-full rounded-2xl p-4 outline-none ${
-                  isDark
-                    ? "border border-white/10 bg-zinc-950 text-white placeholder:text-zinc-500"
-                    : "border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400"
-                }`}
-              />
-            </div>
-
-            <div className="mt-4 flex gap-2">
-              <button
-                type="submit"
-                disabled={saving}
-                className={`rounded-2xl px-4 py-3 disabled:opacity-60 ${
-                  isDark ? "bg-white text-black" : "bg-slate-900 text-white"
-                }`}
-              >
-                {saving ? "Saving..." : editingNoteId ? "Update Note" : "Add Note"}
-              </button>
-
-              <button
-                type="button"
-                onClick={handleCancelEdit}
-                className={`rounded-2xl px-4 py-3 ${
-                  isDark
-                    ? "border border-white/10 text-zinc-300"
-                    : "border border-slate-300 text-slate-700"
-                }`}
-              >
-                Cancel
-              </button>
-
-              {editingNoteId ? (
-                <button
-                  type="button"
-                  onClick={() => handleDeleteNote(editingNoteId)}
-                  className={`rounded-2xl px-4 py-3 ${
-                    isDark
-                      ? "border border-red-500/40 text-red-400"
-                      : "border border-red-300 text-red-600"
-                  }`}
-                >
-                  Delete
-                </button>
-              ) : null}
-            </div>
-          </form>
-        )}
-
         {loading ? (
           <div
             className={`rounded-[28px] p-6 ${
@@ -465,14 +271,13 @@ export default function NotesPage() {
                 <button
                   key={note.id}
                   type="button"
-                  onClick={() => handleEditNote(note)}
+                  onClick={() => router.push(`/notes/${note.id}`)}
                   className={`block w-full px-4 py-5 text-left transition ${
                     isDark
                       ? "border-b border-white/10 hover:bg-zinc-900"
                       : "border-b border-slate-200 hover:bg-slate-50"
                   } last:border-b-0`}
-                  >
-                 
+                >
                   <div className="flex items-start gap-4">
                     <div className="mt-1 flex h-7 w-7 items-center justify-center rounded-full border-2 border-green-500">
                       <div className="h-2 w-2 rounded-full bg-green-500" />
@@ -495,12 +300,12 @@ export default function NotesPage() {
                               isDark ? "text-white" : "text-slate-900"
                             }`}
                           >
-                            {note.title}
+                            {note.title || "Untitled Note"}
                           </h2>
 
                           {note.content ? (
                             <p
-                              className={`mt-3 whitespace-pre-wrap text-sm ${
+                              className={`mt-3 line-clamp-3 whitespace-pre-wrap text-sm ${
                                 isDark ? "text-zinc-300" : "text-slate-600"
                               }`}
                             >
@@ -517,7 +322,7 @@ export default function NotesPage() {
                           >
                             {formatRelativeTime(note.created_at)}
                           </p>
-                        </div>  
+                        </div>
                       </div>
                     </div>
                   </div>
