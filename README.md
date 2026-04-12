@@ -253,3 +253,6 @@ npm run dev
 
 ### Log In Page
 <img src="./screenshots/login page.jpg" width="300" />
+
+### Settings Page (In Progress)
+<img src="./screenshots/settings page.jpg" width="300" />
