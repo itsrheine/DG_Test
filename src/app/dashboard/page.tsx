@@ -32,6 +32,13 @@ export default function DashboardPage() {
   const [view, setView] = useState<"current" | "archived">("current");
 
   const totalSections = 4;
+  const freePlanLimit = 3;
+
+  const activeProjectCount = projects.filter(
+    (project) => project.status !== "archived"
+  ).length;
+
+  const hasReachedFreeLimit = activeProjectCount >= freePlanLimit;
 
   useEffect(() => {
     async function loadProjects() {
@@ -150,10 +157,13 @@ export default function DashboardPage() {
       : project.status === "draft" || project.status === "completed"
   );
 
+  const isNearFreeLimit =
+  !hasReachedFreeLimit && activeProjectCount === freePlanLimit - 1;
+
   return (
     <main className="min-h-screen bg-slate-50 pb-20 text-slate-900 dark:bg-black dark:text-white">
       <div className="mx-auto max-w-6xl px-6 py-12">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-4">
           <div>
             <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
               Dashboard
@@ -163,15 +173,111 @@ export default function DashboardPage() {
             </p>
           </div>
 
-          <Link
-            href="/projects/new"
-            className="rounded-xl bg-slate-900 px-5 py-3 text-white transition hover:opacity-90 dark:bg-white dark:text-black"
-          >
-            New Project
-          </Link>
+          {hasReachedFreeLimit ? (
+            <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-zinc-900">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm font-medium uppercase tracking-wide text-slate-500 dark:text-zinc-400">
+                    Free Plan
+                  </p>
+                  <h2 className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">
+                    You’ve reached your project limit
+                  </h2>
+                  <p className="mt-2 text-sm text-slate-600 dark:text-zinc-400">
+                    {activeProjectCount} of {freePlanLimit} active projects used. Upgrade
+                    to create more projects and unlock future premium features.
+                  </p>
+                </div>
+
+                <div className="flex gap-3">
+                  <Link
+                    href="/pricing"
+                    className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:opacity-90 dark:bg-white dark:text-black"
+                  >
+                    Upgrade Plan
+                  </Link>
+
+                  <Link
+                    href="/pricing"
+                    className="inline-flex items-center justify-center rounded-xl border border-slate-300 px-5 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:border-white/10 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                  >
+                    View Pricing
+                  </Link>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <>
+
+            <div className="flex gap-3">
+              <Link
+                href="/projects/new"
+                className="flex-1 inline-flex items-center justify-center rounded-xl bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:opacity-90 dark:bg-white dark:text-black"
+              >
+                New Project
+              </Link>
+
+              <Link
+                href="/pricing"
+                className={`flex-1 inline-flex items-center justify-center rounded-xl px-5 py-3 text-sm font-medium transition ${
+                  isNearFreeLimit
+                    ? "border border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100 dark:border-amber-400/30 dark:bg-amber-500/10 dark:text-amber-300 dark:hover:bg-amber-500/20"
+                    : "border border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-white/10 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                }`}
+              >
+                {isNearFreeLimit ? "Upgrade Soon" : "Pricing"}
+              </Link>
+            </div>
+
+            <div>
+              <p className="text-sm text-slate-600 dark:text-zinc-400">
+                Free Plan: {activeProjectCount} of {freePlanLimit} active projects used
+              </p>
+
+              <div className="mt-2 h-2 w-full rounded-full bg-slate-200 dark:bg-zinc-800">
+                <div
+                  className={`h-2 rounded-full transition-all ${
+                    isNearFreeLimit
+                      ? "bg-amber-500"
+                      : "bg-slate-900 dark:bg-white"
+                  }`}
+                  style={{
+                    width: `${Math.min((activeProjectCount / freePlanLimit) * 100, 100)}%`,
+                  }}
+                />
+              </div>
+            </div>
+            </>
+          )}
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm transition hover:shadow-md dark:border-white/10 dark:bg-zinc-900 dark:hover:bg-zinc-800/80">
+        {isNearFreeLimit ? (
+          <div className="mt-4 rounded-3xl border border-amber-200 bg-amber-50 p-5 shadow-sm dark:border-amber-500/20 dark:bg-amber-500/10">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-medium uppercase tracking-wide text-amber-700 dark:text-amber-300">
+                  Free Plan
+                </p>
+                <h2 className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">
+                  You’re almost at your project limit
+                </h2>
+                <p className="mt-2 text-sm text-slate-600 dark:text-zinc-400">
+                  {activeProjectCount} of {freePlanLimit} active projects used. Upgrade
+                  now so you can keep creating projects without interruption.
+                </p>
+              </div>
+
+              <Link
+                href="/pricing"
+                className="inline-flex items-center justify-center rounded-xl border border-amber-300 bg-white px-5 py-3 text-sm font-medium text-amber-700 transition hover:bg-amber-100 dark:border-amber-400/30 dark:bg-zinc-900 dark:text-amber-300 dark:hover:bg-zinc-800"
+              >
+                View Plans
+              </Link>
+            </div>
+          </div>
+        ) : null}
+
+        <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm transition hover:shadow-md dark:border-white/10 dark:bg-zinc-900 dark:hover:bg-zinc-800/80">
           <button
             type="button"
             onClick={() => setView("current")}

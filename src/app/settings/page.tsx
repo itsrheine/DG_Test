@@ -194,9 +194,9 @@ export default function SettingsPage() {
               theme={theme}
             />
             <SettingsRow
-              href="/settings/billing"
+              href="/pricing"
               label="Billing"
-              value="Coming Soon"
+              value="View Plans"
               theme={theme}
             />
           </SettingsCard>

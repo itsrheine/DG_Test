@@ -21,6 +21,7 @@ Practice home inspection app using Next.js + Supabase
 ### State & UI
 - React Hooks
 - Global Theme Context (Light/Dark mode)
+- Global Toast Notification System (ToastProvider)
 
 ---
 
@@ -40,6 +41,13 @@ Practice home inspection app using Next.js + Supabase
 - Status tracking (Draft / Completed)
 - Compact mobile-friendly project cards
 - Short project ID display for quick reference
+- Due date tracking for each project
+- Visual alerts for:
+  - Upcoming due dates (within 24 hours)
+  - Overdue reports
+- Toast notifications for deadlines
+- Smart upgrade prompts when nearing project limit
+- Free plan usage progress bar
 
 ---
 
@@ -100,6 +108,18 @@ Practice home inspection app using Next.js + Supabase
 
 ---
 
+### Plan Limits & Usage
+- Free plan inclused up to 3 active projects
+- Real-time project usage tracking
+- Smart UI states:
+  - Normal state (under limit)
+  - "Almost at limit" warning (2 of 3 projects)
+  - Hard limit reached (3 of 3 projects)
+- Upgrade prompts integrated directly into dashboard
+- Visual usage progress bar for plan tracking
+
+---
+
 ### Report UI Enhancements
 - Inline action icons (Print / Download)
 - Removed floating buttons → integrated into header
@@ -152,6 +172,18 @@ Practice home inspection app using Next.js + Supabase
 
 ---
 
+###
+- Dedicated pricing page
+- Free plan with enforced project limits
+- Upgrade flow integrated into:
+  - Dashboard
+  - Settings
+- Soft paywall experience:
+  - Encourages upgrade before blocking
+- Scalable structure for future Stripe integration
+
+---
+
 ### Theme System
 - Global theme (Light / Dark)
 - Instant UI updates across app
@@ -187,6 +219,15 @@ Projects can be:
 
 ---
 
+### Current Status
+- Fully functional inspection workflow
+- Real-time report generation
+- Project lifecycle management (Draft → Completed → Archived)
+- Free plan with enforced usage limits
+- Upgrade-ready SaaS structure (no payments yet)
+
+---
+
 ## In Progress (Roadmap)
 
 ### Phase 1 - Core Experience (Current Focus)
@@ -208,8 +249,10 @@ Projects can be:
 ---
 
 ### Phase 3 - Business & Monetization
-- Subscription plans (monthly/yearly)
-- A la care pricing model
+- Stripe integration (subscriptions)
+- Plan upgrades & billing portal
+- Payment handling (monthly plans)
+- A la carte pricing model
 - Payment integration: 
   - Stripe
   - Square

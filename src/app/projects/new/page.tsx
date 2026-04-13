@@ -4,17 +4,7 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import BottomNav from "@/components/BottomNav";
 import { createClient } from "@/lib/supabase/client";
-
-type Project = {
-  id: string;
-  name: string;
-  client: string;
-  address: string;
-  inspectionDate: string;
-  dueDate: string;
-  createdAt: string;
-  status: "draft" | "completed" | "archived";
-};
+import { useToast } from "@/components/ToastProvider";
 
 export default function NewProjectPage() {
   const router = useRouter();
@@ -25,42 +15,65 @@ export default function NewProjectPage() {
   const [propertyAddress, setPropertyAddress] = useState("");
   const [inspectionDate, setInspectionDate] = useState("");
   const [dueDate, setDueDate] = useState("");
+  const { showToast } = useToast();
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+  e.preventDefault();
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-    if (!user) {
-      router.push("/login");
-      return;
-    }
-
-    const { data, error } = await supabase
-      .from("projects")
-      .insert([
-        {
-          user_id: user.id,
-          name: projectName || "Untitled Project",
-          client: clientName || "No Client",
-          address: propertyAddress || "No Address",
-          inspection_date: inspectionDate || "",
-          due_date: dueDate || null,
-          status: "draft",
-        },
-      ])
-      .select()
-      .single();
-
-    if (error) {
-      console.error(error);
-      return;
-    }
-
-    router.push(`/projects/${data.id}`);
+  if (!user) {
+    router.push("/login");
+    return;
   }
+
+  const { count, error: countError } = await supabase
+    .from("projects")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", user.id)
+    .neq("status", "archived");
+
+  if (countError) {
+    console.error(countError);
+    showToast("Failed to check project limit", "error");
+    return;
+  }
+
+  const freePlanLimit = 3;
+
+  if ((count || 0) >= freePlanLimit) {
+    showToast("Free plan limit reached. Upgrade to create more projects.", "error");
+    router.push("/pricing");
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from("projects")
+    .insert([
+      {
+        user_id: user.id,
+        name: projectName || "Untitled Project",
+        client: clientName || "No Client",
+        address: propertyAddress || "No Address",
+        inspection_date: inspectionDate || "",
+        due_date: dueDate || null,
+        status: "draft",
+      },
+    ])
+    .select()
+    .single();
+
+  if (error) {
+    console.error(error);
+    showToast("Failed to create project", "error");
+    return;
+  }
+
+  showToast("Project created", "success");
+  router.push(`/projects/${data.id}`);
+}
 
   return (
     <main className="min-h-screen bg-slate-50 pb-20">

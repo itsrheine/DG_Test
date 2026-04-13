@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import BottomNav from "@/components/BottomNav";
@@ -86,6 +87,8 @@ export default function AccountPage() {
     license_number: "",
   });
   const [isSaving, setIsSaving] = useState(false);
+  const [activeProjectCount, setActiveProjectCount] = useState(0);
+  const freePlanLimit = 3;
 
   useEffect(() => {
     async function loadAccount() {
@@ -111,6 +114,14 @@ export default function AccountPage() {
         console.error(error);
         return;
       }
+
+      const { count } = await supabase
+        .from("projects")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .neq("status", "archived");
+
+      setActiveProjectCount(count || 0);
 
       if (data) {
         setAccount({
@@ -240,6 +251,86 @@ export default function AccountPage() {
               theme={theme}
               placeholder="License number"
             />
+          </SettingsCard>
+
+          <SettingsCard theme={theme}>
+            <div
+              className={`py-5 ${
+                theme === "dark"
+                  ? "border-b border-white/10"
+                  : "border-b border-slate-200"
+              }`}
+            >
+              <p
+                className={`mb-2 text-sm ${
+                  theme === "dark" ? "text-zinc-400" : "text-slate-500"
+                }`}
+              >
+                Current Plan
+              </p>
+
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p
+                    className={`text-[17px] font-medium ${
+                      theme === "dark" ? "text-white" : "text-slate-900"
+                    }`}
+                  >
+                    Free
+                  </p>
+                  <p
+                    className={`mt-1 text-sm ${
+                      theme === "dark" ? "text-zinc-400" : "text-slate-500"
+                    }`}
+                  >
+                    Billing is not active yet
+                  </p>
+                  <p
+                    className={`mt-1 text-sm ${
+                      theme === "dark" ? "text-zinc-400" : "text-slate-500"
+                    }`}
+                  >
+                    {activeProjectCount} of {freePlanLimit} active projects used
+                    {activeProjectCount >= freePlanLimit - 1 && (
+                      <span className="block text-xs text-amber-500 mt-1">
+                        {activeProjectCount >= freePlanLimit
+                          ? "You’ve reached your limit"
+                          : "You’re almost at your limit"}
+                      </span>
+                    )}
+                  </p>
+                </div>
+
+                <Link
+                  href="/pricing"
+                  className={`rounded-full px-4 py-2 text-sm font-medium ${
+                    theme === "dark"
+                      ? "border border-white/10 bg-zinc-950 text-white"
+                      : "border border-slate-200 bg-white text-slate-900"
+                  }`}
+                >
+                  View Pricing
+                </Link>
+              </div>
+            </div>
+
+            <div className="py-5">
+              <p
+                className={`mb-2 text-sm ${
+                  theme === "dark" ? "text-zinc-400" : "text-slate-500"
+                }`}
+              >
+                Billing Status
+              </p>
+
+              <p
+                className={`text-[17px] ${
+                  theme === "dark" ? "text-white" : "text-slate-900"
+                }`}
+              >
+                Not subscribed
+              </p>
+            </div>
           </SettingsCard>
         </div>
       </div>
