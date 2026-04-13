@@ -314,22 +314,13 @@ npm run dev
 ## Screenshots
 
 <p align="center">
-  <img src="./screenshots/login%20page.jpg" width="100" />
-  <img src="./screenshots/dashboard%20lite.jpg" width="100" />
-  <img src="./screenshots/notes%20page.jpg" width="100" />
+  <img src="./screenshots/login-page.jpg" height="400" />
+  <img src="./screenshots/dashboard-lite.jpg" height="400" />
+  <img src="./screenshots/notes-page.jpg" height="400" />
 </p>
 
 <p align="center">
-  <sub>Login &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Dashboard Light Mode (In Progress) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Note Light Mode</sub>
+  <img src="./screenshots/notepad-page.jpg" height="400" />
+  <img src="./screenshots/billing-page.jpg" height="400" />
+  <img src="./screenshots/settings-page.jpg" height="400" />
 </p>
-
-<p align="center">
-  <img src="./screenshots/notepad%20page.jpg" width="100" />
-  <img src="./screenshots/billings%20page.jpg" width="100" />
-  <img src="./screenshots/settings%20page.jpg" width="100" />
-</p>
-
-<p align="center">
-  <sub>Notepad Light Mode &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Billing Light Mode (In Progress) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Settings Light Mode (In Progress)</sub>
-</p>
-
