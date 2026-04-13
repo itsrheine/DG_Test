@@ -314,9 +314,9 @@ npm run dev
 ## Screenshots
 
 <p align="center">
-  <img src="./screenshots/login%20page.jpg" width="250" />
-  <img src="./screenshots/dashboard%20lite.jpg" width="250" />
-  <img src="./screenshots/notes%20page.jpg" width="250" />
+  <img src="./screenshots/login%20page.jpg" width="100" />
+  <img src="./screenshots/dashboard%20lite.jpg" width="100" />
+  <img src="./screenshots/notes%20page.jpg" width="100" />
 </p>
 
 <p align="center">
@@ -324,9 +324,9 @@ npm run dev
 </p>
 
 <p align="center">
-  <img src="./screenshots/notepad%20page.jpg" width="250" />
-  <img src="./screenshots/billings%20page.jpg" width="250" />
-  <img src="./screenshots/settings%20page.jpg" width="250" />
+  <img src="./screenshots/notepad%20page.jpg" width="100" />
+  <img src="./screenshots/billings%20page.jpg" width="100" />
+  <img src="./screenshots/settings%20page.jpg" width="100" />
 </p>
 
 <p align="center">
