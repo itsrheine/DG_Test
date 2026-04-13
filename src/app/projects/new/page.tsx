@@ -11,8 +11,9 @@ type Project = {
   client: string;
   address: string;
   inspectionDate: string;
+  dueDate: string;
   createdAt: string;
-  status: "active" | "archived";
+  status: "draft" | "completed" | "archived";
 };
 
 export default function NewProjectPage() {
@@ -23,6 +24,7 @@ export default function NewProjectPage() {
   const [clientName, setClientName] = useState("");
   const [propertyAddress, setPropertyAddress] = useState("");
   const [inspectionDate, setInspectionDate] = useState("");
+  const [dueDate, setDueDate] = useState("");
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -45,6 +47,7 @@ export default function NewProjectPage() {
           client: clientName || "No Client",
           address: propertyAddress || "No Address",
           inspection_date: inspectionDate || "",
+          due_date: dueDate || null,
           status: "draft",
         },
       ])
@@ -136,6 +139,18 @@ export default function NewProjectPage() {
               type="date"
               value={inspectionDate}
               onChange={(e) => setInspectionDate(e.target.value)}
+              className="w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="mb-2 block text-sm font-medium text-slate-700">
+              Due Date
+            </label>
+            <input
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
               className="w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none"
             />
           </div>

@@ -6,6 +6,7 @@ import BottomNav from "@/components/BottomNav";
 import { createClient } from "@/lib/supabase/client";
 import { useTheme } from "@/components/ThemeProvider";
 import { uploadCompanyLogo } from "@/lib/logo-storage";
+import { useToast } from "@/components/ToastProvider";
 
 function SettingsCard({
   children,
@@ -73,6 +74,7 @@ export default function CompanyPage() {
   const router = useRouter();
   const supabase = createClient();
   const { theme } = useTheme();
+  const { showToast } = useToast();
 
   const [userId, setUserId] = useState<string | null>(null);
   const [company, setCompany] = useState({
@@ -98,7 +100,7 @@ export default function CompanyPage() {
         }));
       } catch (error) {
         console.error("Logo upload error:", error);
-        alert(`Failed to upload logo: ${error instanceof Error ? error.message : "Unknown error"}`);  
+        showToast("Failed to upload logo", "error");  
       } finally {
         event.target.value = "";
       }
@@ -167,9 +169,9 @@ export default function CompanyPage() {
 
     if (error) {
       console.error(error);
-      alert("Failed to save company info");
+      showToast("Failed to save company info", "error");
     } else {
-      alert("Company info saved");
+      showToast("Company info saved", "success");
     }
 
     setIsSaving(false);

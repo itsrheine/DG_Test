@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import BottomNav from "@/components/BottomNav";
 import { createClient } from "@/lib/supabase/client";
 import { useTheme } from "@/components/ThemeProvider";
+import { useToast } from "@/components/ToastProvider";
 
 function SettingsCard({
   children,
@@ -110,13 +111,14 @@ export default function ReportSettingsPage() {
   const router = useRouter();
   const supabase = createClient();
   const { theme } = useTheme();
-
+  
   const [userId, setUserId] = useState<string | null>(null);
   const [report, setReport] = useState({
     report_header: "",
     footer_note: "",
   });
   const [isSaving, setIsSaving] = useState(false);
+  const { showToast } = useToast();
 
   useEffect(() => {
     async function loadReportSettings() {
@@ -171,9 +173,9 @@ export default function ReportSettingsPage() {
 
     if (error) {
       console.error(error);
-      alert("Failed to save report settings");
+      showToast("Failed to save report settings");
     } else {
-      alert("Report settings saved");
+      showToast("Report settings saved");
     }
 
     setIsSaving(false);

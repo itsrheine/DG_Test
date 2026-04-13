@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Check, Ellipsis, Share } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useTheme } from "@/components/ThemeProvider";
+import { useToast } from "@/components/ToastProvider";
 
 type Note = {
   id: string;
@@ -42,6 +43,7 @@ export default function NoteDetailPage() {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
+  const { showToast } = useToast();
 
   const bodyRef = useRef<HTMLTextAreaElement | null>(null);
   const hasLoadedRef = useRef(false);
@@ -144,7 +146,7 @@ export default function NoteDetailPage() {
 
     if (error) {
       console.error(error);
-      alert("Failed to save note");
+      showToast("Failed to save note", "error");
       return;
     }
 
@@ -165,7 +167,7 @@ export default function NoteDetailPage() {
 
     if (error) {
       console.error(error);
-      alert("Failed to delete note");
+      showToast("Note deleted", "success");
       return;
     }
 
@@ -175,31 +177,31 @@ export default function NoteDetailPage() {
   async function handleShare() {
     try {
       await navigator.clipboard.writeText(window.location.href);
-      alert("Link copied");
+      showToast("Link copied", "success");
     } catch (error) {
       console.error(error);
-      alert("Could not copy link");
+      showToast("Could not copy link", "error");
     }
   }
 
   function handleScan() {
     setShowMoreMenu(false);
-    alert("Scan coming soon");
+    showToast("Scan coming soon");
   }
 
   function handlePinNote() {
     setShowMoreMenu(false);
-    alert("Pin note coming soon");
+    showToast("Pin note coming soon");
   }
 
   function handleLockNote() {
     setShowMoreMenu(false);
-    alert("Lock note coming soon");
+    showToast("Lock note coming soon");
   }
 
   function handleFindInNote() {
     setShowMoreMenu(false);
-    alert("Find in note coming soon");
+    showToast("Find in note coming soon");
   }
 
   if (loading) {

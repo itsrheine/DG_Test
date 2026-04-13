@@ -6,6 +6,7 @@ import BottomNav from "@/components/BottomNav";
 import { createClient } from "@/lib/supabase/client";
 import { ArrowLeft, Plus, Search } from "lucide-react";
 import { useTheme } from "@/components/ThemeProvider";
+import { useToast } from "@/components/ToastProvider";
 
 type Note = {
   id: string;
@@ -46,6 +47,8 @@ export default function NotesPage() {
   const [creating, setCreating] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  
+  const { showToast } = useToast();
 
   const isDark = theme === "dark";
 
@@ -94,8 +97,15 @@ export default function NotesPage() {
           .order("created_at", { ascending: false }),
       ]);
 
-      if (notesError) console.error(notesError);
-      if (projectsError) console.error(projectsError);
+      if (notesError) {
+        console.error(notesError);
+        showToast("Failed to load notes", "error");
+      }
+
+      if (projectsError) {
+        console.error(projectsError);
+        showToast("Failed to load projects", "error");
+      }
 
       setNotes((notesData || []) as Note[]);
       setProjects((projectsData || []) as Project[]);
@@ -132,11 +142,13 @@ export default function NotesPage() {
 
     setCreating(false);
 
-    if (error) {
-      console.error(error);
-      return;
-    }
-
+      if (error) {
+        console.error(error);
+        showToast("Failed to create note", "error");
+        return;
+      }
+    
+    showToast("Note created", "success");
     router.push(`/notes/${data.id}`);
   }
 
@@ -254,7 +266,7 @@ export default function NotesPage() {
                 : "border border-slate-200 bg-white text-slate-500"
             }`}
           >
-            No notes yet.
+            {searchQuery ? "No results found." : "No notes yet."}
           </div>
         ) : (
           <div

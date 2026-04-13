@@ -11,6 +11,7 @@ import { useParams } from "next/navigation";
 import BottomNav from "@/components/BottomNav";
 import { createClient } from "@/lib/supabase/client";
 import { uploadProjectPhoto, deleteProjectPhoto } from "@/lib/photo-storage";
+import { useToast } from "@/components/ToastProvider";
 
 type IssueType = "repair" | "improve" | "monitor" | "safety";
 
@@ -21,6 +22,7 @@ type Project = {
   client: string;
   address: string;
   inspection_date: string;
+  due_date: string | null;
   created_at: string;
   status: "draft" | "completed" | "archived";
   is_shared?: boolean;
@@ -52,6 +54,8 @@ export default function ProjectDetailPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [fullReportSections, setFullReportSections] = useState<any[]>([]);
   const [project, setProject] = useState<Project | null>(null);
+  const [dueDate, setDueDate] = useState("");
+  const { showToast } = useToast();
 
   const sections = ["Service Walks", "Driveway", "Porch", "Stairs"];
 
@@ -84,27 +88,28 @@ export default function ProjectDetailPage() {
   const [draggedPhotoIndex, setDraggedPhotoIndex] = useState<number | null>(
     null
   );
-
+  
   const materialOptions = ["Concrete", "Brick", "Pavers", "Stone", "Asphalt"];
   const conditionOptions = ["Good", "Marginal", "Poor"];
 
   useEffect(() => {
-    async function loadProject() {
-      if (!projectId) return;
+  async function loadProject() {
+    if (!projectId) return;
 
-      const { data, error } = await supabase
-        .from("projects")
-        .select("*")
-        .eq("id", projectId)
-        .single();
+    const { data, error } = await supabase
+      .from("projects")
+      .select("*")
+      .eq("id", projectId)
+      .single();
 
-      if (error) {
-        console.error(error);
-        return;
-      }
-
-      setProject(data);
+    if (error) {
+      console.error(error);
+      return;
     }
+
+    setProject(data);
+    setDueDate(data?.due_date || "");
+  }
 
     loadProject();
   }, [projectId, supabase]);
@@ -216,6 +221,24 @@ export default function ProjectDetailPage() {
         }, 1200);
       }
     }
+  }
+
+    async function handleUpdateDueDate() {
+    if (!projectId) return;
+
+    const { error } = await supabase
+      .from("projects")
+      .update({ due_date: dueDate || null })
+      .eq("id", projectId);
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setProject((prev) =>
+      prev ? { ...prev, due_date: dueDate || null } : prev
+    );
   }
 
   async function handleToggleCompleted() {
@@ -614,6 +637,17 @@ export default function ProjectDetailPage() {
     }
   }
 
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const dueDateValue = dueDate ? new Date(dueDate) : null;
+
+  const isOverdue =
+    !!dueDateValue && dueDateValue.getTime() < today.getTime();
+
+  const isDueToday =
+    !!dueDateValue && dueDateValue.getTime() === today.getTime();
+
   return (
     <main className="min-h-screen bg-slate-50 pb-20 text-slate-900 dark:bg-black dark:text-white">
       <div className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur dark:border-white/10 dark:bg-zinc-950/90">
@@ -677,6 +711,48 @@ export default function ProjectDetailPage() {
                   Inspection Date:{" "}
                   {project?.inspection_date || "No inspection date yet"}
                 </p>
+                
+              <div
+                className={`text-sm leading-tight ${
+                  isOverdue
+                    ? "text-red-600 dark:text-red-400"
+                    : isDueToday
+                    ? "text-yellow-600 dark:text-yellow-300"
+                    : "text-slate-600 dark:text-zinc-400"
+                }`}
+              >
+                Due Date:{" "}
+                <input
+                  type="date"
+                  value={dueDate}
+                  onChange={async (e) => {
+                    const newDate = e.target.value;
+                    setDueDate(newDate);
+
+                    const { error } = await supabase
+                      .from("projects")
+                      .update({ due_date: newDate || null })
+                      .eq("id", projectId);
+
+                    if (error) {
+                      console.error(error);
+                      showToast("Failed to save due date", "error");
+                    } else {
+                      setProject((prev) =>
+                        prev ? { ...prev, due_date: newDate || null } : prev
+                      );
+                      showToast("Due date saved", "success");
+                    }
+                  }}
+                  className={`ml-1 rounded border border-transparent bg-transparent px-1 py-0.5 text-sm focus:outline-none ${
+                    isOverdue
+                      ? "text-red-600 focus:border-red-300 dark:text-red-400 dark:focus:border-red-500/40"
+                      : isDueToday
+                      ? "text-yellow-600 focus:border-yellow-300 dark:text-yellow-300 dark:focus:border-yellow-500/40"
+                      : "text-slate-700 focus:border-slate-300 dark:text-zinc-300 dark:focus:border-white/20"
+                  }`}
+                />
+              </div>
 
                 <div className="mt-4">
                   <p className="text-xs text-slate-500 dark:text-zinc-500">

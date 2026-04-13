@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import BottomNav from "@/components/BottomNav";
 import { createClient } from "@/lib/supabase/client";
 import { useTheme } from "@/components/ThemeProvider";
+import { useToast } from "@/components/ToastProvider";
 
 function SettingsCard({
   children,
@@ -75,6 +76,7 @@ export default function AccountPage() {
   const router = useRouter();
   const supabase = createClient();
   const { theme } = useTheme();
+  const { showToast } = useToast();
 
   const [userId, setUserId] = useState<string | null>(null);
   const [email, setEmail] = useState("");
@@ -141,9 +143,9 @@ export default function AccountPage() {
 
     if (error) {
       console.error(error);
-      alert("Failed to save account info");
+      showToast("Failed to save account info");
     } else {
-      alert("Account info saved");
+      showToast("Account info saved");
     }
 
     setIsSaving(false);
