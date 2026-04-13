@@ -314,13 +314,13 @@ npm run dev
 ## Screenshots
 
 <p align="center">
-  <img src="./screenshots/login-page.jpg" height="400" />
-  <img src="./screenshots/dashboard-lite.jpg" height="400" />
-  <img src="./screenshots/notes-page.jpg" height="400" />
+  <img src="./screenshots/login page.jpg" height="400" />
+  <img src="./screenshots/dashboard lite.jpg" height="400" />
+  <img src="./screenshots/notes page.jpg" height="400" />
 </p>
 
 <p align="center">
-  <img src="./screenshots/notepad-page.jpg" height="400" />
-  <img src="./screenshots/billing-page.jpg" height="400" />
-  <img src="./screenshots/settings-page.jpg" height="400" />
+  <img src="./screenshots/notepad page.jpg" height="400" />
+  <img src="./screenshots/billings page.jpg" height="400" />
+  <img src="./screenshots/settings page.jpg" height="400" />
 </p>
